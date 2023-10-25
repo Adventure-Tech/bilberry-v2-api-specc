@@ -121,27 +121,43 @@ paths:
           explode: true
           schema:
             type: string
+        - name: start
+          in: query
+          description: Will only show products with start date after this date. Must be formated in ISO 8601 format. [See ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)
+          required: false
+          explode: true
+          schema:
+            type: string
+            format: date
+        - name: end
+          in: query
+          description: Will only show products with END date BEFORE this date. Must be formated in ISO 8601 format. [See ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)
+          required: false
+          explode: true
+          schema:
+            type: string
+            format: date            
       responses:
         '200':
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductCatalogs'
+                $ref: '#/components/schemas/Product'
       security:
         - regular_token:
             - read:productcatalogs
   /products/{productId}:
     get:
       tags:
-        - 'Product Catalogs'
-      summary: Gets a specific bookable product catalog
-      description: Gets a specific bookable product catalog
-      operationId: getProductCatalog
+        - 'Products'
+      summary: Gets all a product with capacity
+      description: Gets a bookable product with capacity. 
+      operationId: getProduct
       parameters:
-        - name: productCatalogId
+        - name: productId
           in: path
-          description: ID of product-catalog that needs to be fetched
+          description: ID of product that needs to be fetched
           required: true
           schema:
             type: integer
@@ -159,11 +175,42 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProductCatalog'
+                $ref: '#/components/schemas/Product'
       security:
         - regular_token:
             - read:productcatalogs
-  
+  /products/{productId}/capacity:
+    get:
+      tags:
+        - 'Products'
+      summary: Gets  real time capacity for a product
+      description:  Gets  real time capacity for a product 
+      operationId: getProductCapacity
+      parameters:
+        - name: productId
+          in: path
+          description: ID of product that needs to be fetched
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  capacity:
+                    type: integer
+                    format: int64
+                    default: 10
+                  has_availability:
+                    type: boolean
+                    default: true
+      security:
+        - regular_token:
+            - read:productcatalogs
 components:
   schemas:
     ProductCatalogs:
@@ -232,7 +279,7 @@ components:
                 {
                     "id": 1,
                     "price_category_id": 1,
-                    "name": "Voksen",
+                    "name": "Adult",
                     "price_type": "Adult",
                     "price": 1000,
                     "retail_price": 1000,
@@ -243,7 +290,7 @@ components:
                     "age_to": null,
                     "rates": [
                         {
-                            "name": "Mat",
+                            "name": "Food",
                             "price": 300,
                             "retail_price": 300,
                             "vat": 15,
@@ -261,7 +308,7 @@ components:
                             "retail_vat_amount": 0
                         },
                         {
-                            "name": "Tur",
+                            "name": "Tour",
                             "price": 300,
                             "retail_price": 300,
                             "vat": 25,
@@ -274,7 +321,7 @@ components:
                 {
                     "id": 2,
                     "price_category_id": 2,
-                    "name": "Barn",
+                    "name": "Child",
                     "price_type": "Child",
                     "price": 700,
                     "retail_price": 700,
@@ -285,7 +332,7 @@ components:
                     "age_to": 10,
                     "rates": [
                         {
-                            "name": "Barn",
+                            "name": "Child",
                             "price": 700,
                             "retail_price": 700,
                             "vat": 25,
@@ -311,7 +358,204 @@ components:
           enum: 
            - NOK
            - EUR
-           - GBP 
+           - GBP
+    Products:
+      type: array 
+      items:
+        $ref: '#/components/schemas/Product'  
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          default: 10
+        title:
+          type: string
+          default: "Internal name: For example Rib safari"
+        description: 
+          type: string
+          default: "Internal description: For example A rib safari" 
+        web_title: 
+          type: string
+          default: "Gets translated name, meant for external use: For example Rib Safari to Trollfjorden" 
+        web_url: 
+          type: string
+          default: "Gets translated url to which page on your website it is meant to be used."  
+        web_short_description: 
+          type: string
+          default: "Gets translated short description, meant for external use. Will be HTML"   
+        web_full_descrition: 
+          type: string
+          default: "Gets translated full description, meant for external use. Will be HTML."   
+        web_additional_info: 
+          type: string
+          default: "Gets translated additional info, meant for external use. Will be HTML."   
+        web_times: 
+          type: string
+          default: "Gets departure times. Manually entered string."
+        web_disclaimer: 
+          type: string
+          default: "Gets translated additional info, meant for external use. Will be HTML."
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        cancellation_time:
+          type: integer
+          description: The number of minutes before start date a booking can be cancelled.
+          default: 1440
+        cutoff_time:
+          type: integer
+          description: The number of minutes before start date a booking can be booked. Can be negative.
+          default: 1440
+        product_catalog_id:
+          type: integer
+          description: The id of the product catalog this product belongs to.
+          default: 10  
+        capacity:
+          type: integer
+          description: The capacity that is left on this particular product.
+          default: 10  
+        difficulty:
+          type: string
+          default: 'easy'
+          enum:
+            - easy
+            - medium
+            - hard
+        from_price:
+          type: integer
+          default: 1000
+        from_age:
+          type: integer
+          default: 12
+        guest_list_dependant:
+          type: boolean
+          description: If guest list dependant, this means that a reservation against this product must contain all mandatory guest list fields for all PAX
+          default: true
+        guest_list_entities:
+          type: array 
+          description: The guest list entities that can be filled out for each PAX. Mandatory means that the field must be filled out for all PAX. Postpone means that the field can be filled out later.
+          default: [
+                {
+                    "id": 1,
+                    "title": "Name",
+                    "key": "name",
+                    "type": "text",
+                    "mandatory": 1,
+                    "postpone": 0
+                },
+                {
+                    "id": 2,
+                    "title": "Pick size of your dry suit (S, M, L, XL)",
+                    "key": "pick_size_of_your_dry_suit_s_m_l_xl",
+                    "type": "text",
+                    "mandatory": 1,
+                    "postpone": 1
+                }
+          ]
+        order_entity_dependant:
+          type: boolean
+          description: If order entity dependant, this means that a reservation against this product must contain all mandatory order entity fields for the order. The difference between this and guest list dependant is that this is for the order, not for each PAX.
+          default: true
+        order_entities:
+          type: array
+          description: The order entities that can be filled out for the order. Mandatory means that the field must be filled out for the order. Postpone means that the field can be filled out later.
+          default: [
+           {
+                    "id": 1,
+                    "title": "Allergies",
+                    "key": "allergies",
+                    "type": "checkbox",
+                    "mandatory": 0,
+                    "postpone": 0
+                },
+                {
+                    "id": 2,
+                    "title": "Postal code?",
+                    "key": "postal_code",
+                    "type": "text",
+                    "mandatory": 0,
+                    "postpone": 0
+                }
+                ]
+        prices:
+          type: array
+          description: The prices for this product. These ID's must be used when creating a reservation against this product, and NOT the id from the default_prices on the product catalog.
+          default: [
+                {
+                    "id": 10123,
+                    "price_category_id": 1,
+                    "name": "Adult",
+                    "price_type": "Adult",
+                    "price": 1000,
+                    "retail_price": 1000,
+                    "commission": null,
+                    "vat_amount": 99.13,
+                    "occupancy": 1,
+                    "age_from": null,
+                    "age_to": null,
+                    "rates": [
+                        {
+                            "name": "Food",
+                            "price": 300,
+                            "retail_price": 300,
+                            "vat": 15,
+                            "vat_id": 2,
+                            "vat_amount": 39.13,
+                            "retail_vat_amount": 39.13
+                        },
+                        {
+                            "name": "Guide",
+                            "price": 400,
+                            "retail_price": 400,
+                            "vat": 0,
+                            "vat_id": 5,
+                            "vat_amount": 0,
+                            "retail_vat_amount": 0
+                        },
+                        {
+                            "name": "Tour",
+                            "price": 300,
+                            "retail_price": 300,
+                            "vat": 25,
+                            "vat_id": 1,
+                            "vat_amount": 60,
+                            "retail_vat_amount": 60
+                        }
+                    ]
+                },
+                {
+                    "id": 20345,
+                    "price_category_id": 2,
+                    "name": "Child",
+                    "price_type": "Child",
+                    "price": 700,
+                    "retail_price": 700,
+                    "commission": null,
+                    "vat_amount": 140,
+                    "occupancy": 1,
+                    "age_from": 0,
+                    "age_to": 10,
+                    "rates": [
+                        {
+                            "name": "Child",
+                            "price": 700,
+                            "retail_price": 700,
+                            "vat": 25,
+                            "vat_id": 1,
+                            "vat_amount": 140,
+                            "retail_vat_amount": 140
+                        }
+                    ]
+                }
+            ]
+        location:
+          type: object
+          $ref: '#/components/schemas/Location'
     Location:
       type: object
       properties:
