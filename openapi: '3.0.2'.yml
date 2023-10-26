@@ -12,7 +12,15 @@ tags:
   - name: Products
     description: Contains information about your products and availability. A product is an actual implementation of a product catalog, with start and end dates, and capacity. The product is used for booking.
   - name: Reservation
-    description: Operations about user
+    description: Create reservations.
+  - name: Giftcards
+    description: Create giftcards and get information about giftcards
+  - name: Promo codes
+    description: Check promo code statuses
+  - name: Leads 
+    description: Create leads
+  - name: Settings
+    description: Get settings and information from your bilberry installation
 paths:  
   /product-catalogs:
     get:
@@ -51,7 +59,7 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        200:
           description: Successful operation
           content:
             application/json:
@@ -83,12 +91,44 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        200:
           description: Successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductCatalog'
+      security:
+        - regular_token:
+            - read:productcatalogs
+  /product-catalogs/{productCatalogId}/availability:
+    get:
+      tags:
+        - 'Product Catalogs'
+      summary: Get all availability and implementations of a product catalog, grouped by days
+      description: Get all availability and implementations of a product catalog, grouped by days
+      operationId: getProductCatalogAvailability
+      parameters:
+        - name: productCatalogId
+          in: path
+          description: ID of product-catalog that needs to be fetched
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: lang
+          in: query
+          description: Which supported language to get product catalogs in. Defaults to the bilberry installations preferred language (in most cases nb). Must be formated in ISO 639-1 format. [See list of ISO 639-1 names](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)
+          required: false
+          explode: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductsGroupedByDate'
       security:
         - regular_token:
             - read:productcatalogs
@@ -138,7 +178,7 @@ paths:
             type: string
             format: date            
       responses:
-        '200':
+        200:
           description: Successful operation
           content:
             application/json:
@@ -170,7 +210,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        200:
           description: Successful operation
           content:
             application/json:
@@ -195,7 +235,7 @@ paths:
             type: integer
             format: int64
       responses:
-        '200':
+        200:
           description: Successful operation
           content:
             application/json:
@@ -211,6 +251,73 @@ paths:
       security:
         - regular_token:
             - read:productcatalogs
+  /reserve:
+    post:
+      tags:
+        - Reservation
+      summary: Place an reservation
+      description: Place an reservation
+      operationId: placeReservation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationRequest'
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationResponse'
+  /giftcards:
+    post:
+      tags:
+        - Giftcards
+      summary: Place an giftcard order
+      description: Place an giftcard order
+      operationId: placeGiftcardOrder
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GiftcardRequest'
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GiftcardResponse'
+  /giftcards/{giftcardId}:
+    get:
+      tags:
+        - Giftcards
+      summary: Check status a giftcard
+      description: Check status of a giftcard
+      operationId: giftcardStatus
+      parameters:
+        - name: giftcardId
+          in: path
+          description: ID of giftcard that needs to be fetched
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GiftcardStatusResponse'
+        402:
+          description: Payment required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Giftcard402Response'
+
 components:
   schemas:
     ProductCatalogs:
@@ -556,6 +663,13 @@ components:
         location:
           type: object
           $ref: '#/components/schemas/Location'
+    ProductsGroupedByDate:
+      type: object
+      default: {
+        "2023-10-30": [
+          ... will contain bookable products within this day. See products scheme
+        ]
+      }
     Location:
       type: object
       properties:
@@ -601,29 +715,397 @@ components:
                   "url": "https://bilberry.no/images/11/svolvar.jpg"
                 }
               ]
-      xml:
-        name: '##default'
+    ReservationRequest:
+      type: object
+      required: [
+        name,
+        email,
+        phone,
+        country,
+        tours,
+        url,
+        termsUrl
+      ]
+      properties:
+        name:
+          type: string
+          description: "Name of the booker"
+          default: "John Doe"
+        email:
+          type: string
+          description: "Email of the booker"
+          default: "john@doe.no"
+        phone:
+          type: string
+          description: "Phone of the booker. Must be in given format."
+          default: "+4712345678"
+        address1: 
+          type: string
+          description: "Address of the booker"
+          default: "Slottsgata 1"
+        zip: 
+          type: string
+          description: "Postal code of the booker"
+          default: "8300"
+        city: 
+          type: string
+          description: "City of the booker"
+          default: "Svolvær"
+        giftcard: 
+          type: string
+          description: Giftcard code, if the booker has a valid giftcard"
+          default: "FGJK5L"
+        tours:
+          type: array
+          description: "The tours that the booker wants to book. Root ID will refer to product.id. Pax.*.id will refer to product.price.id - order_entities and guest_list will use they id of the field as key."
+          default: [
+            {
+              "id": 1,
+              "pax": [
+                {
+                  "id": 10123,
+                  "quantity": 1,
+                }
+              ],
+            
+              "order_entities": [
+                {
+                  "1": "Peanuts",
+                  "2": "1234"
+                }
+              ],
+              "guest_list": [
+                {
+                  "1": "John Doe",
+                  "2": "XL"
+                }
+              ]
+            }
+          ]
+        coupon_code:
+          type: string
+          description: "Coupon code to be used for this reservation"
+          default: "WINTER2023"
+        order_note:
+          type: string
+          description: "Note to be added to the order"
+          default: "This is a note"
+        url:
+          type: string
+          description: "URL to the page where the checkout is happening. This will be used to verify with NETS and STRIPE that the checkout can happen from this URL."
+          default: "https://bilberry.no/checkout"
+        termsUrl:
+          type: string
+          description: "URL to the page where terms and conditions are located. This will be sent to NETS."
+    ReservationResponse:
+      type: object 
+      properties:
+        id: 
+          type: integer
+          description: "ID of the reservation"
+          default: 12345
+        invoice_date:
+          type: string
+          format: date-time
+          description: "Date when the invoice was created"
+          default: "2023-10-25T11:20:20.000000Z"
+        invoice_due_date:
+          type: string
+          format: date-time
+          description: "Date when the invoice is due. If not paid within this date, the reservation will be cancelled."
+          default: "2023-10-25T11:35:20.000000Z"
+        name:
+          type: string
+          description: "Name of the booker"
+          default: "John Doe"
+        email:
+          type: string
+          description: "Email of the booker"
+          default: "john@doe.no"
+        phone:
+          type: string
+          description: "Phone of the booker."
+          default: "+4712345678"
+        address1:
+          type: string
+          description: "Address of the booker"
+          nullable: true
+          default: "Slottsgata 1"
+        address2: 
+          type: string
+          description: "Address of the booker"
+          nullable: true
+          default: "Vestre inngang"
+        zip:
+          type: string
+          description: "Postal code of the booker"
+          nullable: true
+          default: "8300"
+        city:
+          type: string
+          description: "City of the booker"
+          nullable: true
+          default: "Svolvær"
+        delivery_date: 
+          type: string
+          format: date-time
+          description: "The latest date of any delivery within the order."
+          default: "2023-11-30T11:20:20.000000Z"
+        total_pax:
+          type: integer
+          description: "Total number of pax in the order"
+          default: 1
+        total:
+          type: integer
+          description: "Total price of the order"
+          default: 1000
+        paid_at:
+          type: string
+          format: date-time
+          description: "Date when the invoice was paid"
+          nullable: true
+          default: null
+        payment_gateway:
+          type: string
+          description: "Payment gateway used for this reservation"
+          default: "stripe"
+          enum:
+            - stripe
+            - nets
+        stripe_key:
+          type: string
+          description: "Stripe key used for this reservation. Is only present if stripe is the payment gateway."
+          nullable: true
+          default: "pk_test_1234567890"
+        stripe_client_secret:
+          type: string
+          description: "Stripe client secret used for this reservation. Is only present if stripe is the payment gateway."
+          nullable: true
+          default: "pi_1234567890_secret_gwe234234"
+        payment_id:
+          type: string
+          description: "Payment ID of the nets payment. Is only present if nets is the payment gateway."
+          nullable: true
+          default: "01234567bfe12324few1234"
+        merchant_id:
+          type: string
+          description: "Merchant ID of the nets payment. Is only present if nets is the payment gateway."
+          nullable: true
+          default: "1234567890"
+        checkout_key: 
+          type: string
+          description: "Checkout key used for this reservation. Is only present if nets is the payment gateway."
+          nullable: true
+          default: "test-checkout-key-12fbg34bm567poi890c"
+    GiftcardRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: "Name of the giftcard buyer"
+          default: "John Doe"
+        email:
+          type: string
+          description: "Email of the giftcard buyer"
+          default: "john@doe.no"
+        phone:
+          type: string
+          description: "Phone of the giftcard buyer"
+          default: "+4712345678"
+        country:
+          type: string
+          description: "Country of the giftcard buyer"
+          default: "Norway"
+        recipient_first_name:
+          type: string
+          description: "First name of the giftcard recipient"
+          default: "Jane"
+        recipient_last_name:
+          type: string
+          description: "Last name of the giftcard recipient"
+          default: "Doe"
+        recipient_email:
+          type: string
+          description: "Email of the giftcard recipient"
+          default: "jane@doe.no"
+        amount:
+          type: integer
+          description: "Amount of the giftcard"
+          default: 1000
+        url: 
+          type: string
+          description: "URL to the page where the checkout is happening. This will be used to verify with NETS and STRIPE that the checkout can happen from this URL."
+          default: "https://bilberry.no/checkout"
+        termsUrl:
+          type: string
+          description: "URL to the page where terms and conditions are located. This will be sent to NETS."
+    GiftcardResponse:
+      type: object
+      properties:
+        id: 
+          type: integer
+          description: "ID of the reservation"
+          default: 12345
+        giftcard_id:
+          type: integer
+          description: "Id/code of the giftcard"
+          default: 5bDKgD0
+        giftcard_expires_at:
+          type: string
+          format: date-time
+          description: "Date when the giftcard expires. Ususally 1 years after it was bought."
+          default: "2025-10-25T11:35:20.000000Z"
+        invoice_date:
+          type: string
+          format: date-time
+          description: "Date when the invoice was created"
+          default: "2023-10-25T11:20:20.000000Z"
+        invoice_due_date:
+          type: string
+          format: date-time
+          description: "Date when the invoice is due. If not paid within this date, the reservation will be cancelled."
+          default: "2023-10-25T11:35:20.000000Z"
+        name:
+          type: string
+          description: "Name of the booker"
+          default: "John Doe"
+        email:
+          type: string
+          description: "Email of the booker"
+          default: "john@doe.no"
+        phone:
+          type: string
+          description: "Phone of the booker."
+          default: "+4712345678"
+        address1:
+          type: string
+          description: "Address of the booker"
+          nullable: true
+          default: "Slottsgata 1"
+        address2: 
+          type: string
+          description: "Address of the booker"
+          nullable: true
+          default: "Vestre inngang"
+        zip:
+          type: string
+          description: "Postal code of the booker"
+          nullable: true
+          default: "8300"
+        city:
+          type: string
+          description: "City of the booker"
+          nullable: true
+          default: "Svolvær"
+        delivery_date: 
+          type: string
+          format: date-time
+          description: "The latest date of any delivery within the order."
+          default: "2023-11-30T11:20:20.000000Z"
+        total:
+          type: integer
+          description: "Total price of the order"
+          default: 1000
+        paid_at:
+          type: string
+          format: date-time
+          description: "Date when the invoice was paid"
+          nullable: true
+          default: null
+        payment_gateway:
+          type: string
+          description: "Payment gateway used for this reservation"
+          default: "stripe"
+          enum:
+            - stripe
+            - nets
+        stripe_key:
+          type: string
+          description: "Stripe key used for this reservation. Is only present if stripe is the payment gateway."
+          nullable: true
+          default: "pk_test_1234567890"
+        stripe_client_secret:
+          type: string
+          description: "Stripe client secret used for this reservation. Is only present if stripe is the payment gateway."
+          nullable: true
+          default: "pi_1234567890_secret_gwe234234"
+        payment_id:
+          type: string
+          description: "Payment ID of the nets payment. Is only present if nets is the payment gateway."
+          nullable: true
+          default: "01234567bfe12324few1234"
+        merchant_id:
+          type: string
+          description: "Merchant ID of the nets payment. Is only present if nets is the payment gateway."
+          nullable: true
+          default: "1234567890"
+        checkout_key: 
+          type: string
+          description: "Checkout key used for this reservation. Is only present if nets is the payment gateway."
+          nullable: true
+          default: "test-checkout-key-12fbg34bm567poi890c"
+    Giftcard402Response:
+      type: object
+      default: {
+          "success": false,
+          "error": {
+              "code": 402,
+              "message": "Giftcard is not paid."
+          }
+      }
+    GiftcardStatusResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "Id/code of the giftcard"
+          default: 5bDKgD0
+        custom_code:
+          type: string
+          description: "Custom code that is set on the giftcard"
+          default: 5bDKgD0
+        expires_at:
+          type: string
+          format: date-time
+          description: "Date when the giftcard expires. Ususally 1 years after it was bought."
+          default: "2025-10-25T11:35:20.000000Z"
+        created_at:
+          type: string
+          format: date-time
+          description: "Date when the giftcard was created"
+          default: "2025-10-25T11:35:20.000000Z"
+        original_amount:
+          type: integer
+          description: "Original amount of the giftcard"
+          default: 1000
+        balance:
+          type: integer
+          description: "Remaining balance of the giftcard"
+          default: 1000
+        name:
+          type: string
+          description: "Name of the receiver"
+          default: "Jane Doe"
+        email:
+          type: string
+          description: "Email of the receiver"
+          default: "jane@doe"
   requestBodies:
-    Pet:
-      description: Pet object that needs to be added to the store
+    Reservation:
+      description: Reservation object that needs to be sent
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ProductCatalog'
-        application/xml:
-          schema:
-            $ref: '#/components/schemas/ProductCatalog'
-    UserArray:
-      description: List of user object
+            $ref: '#/components/schemas/ReservationRequest'
+    Giftcard:
+      description: Giftcard object that needs to be sent
       content:
         application/json:
           schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/ProductCatalog'
-
+            $ref: '#/components/schemas/GiftcardRequest'
   securitySchemes:
     regular_token:
       type: apiKey
       name: bearer_token
       in: header
+      
