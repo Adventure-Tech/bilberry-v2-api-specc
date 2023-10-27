@@ -1,6 +1,6 @@
 openapi: '3.0.2'
 info:
-  title: Bilberry API
+  title: Bilberry Booking API
   version: 1.0.0
   description: |-
     This is the public booking API used for listing out activities, creating booking and collecting payments. Used by our own widgets.
