@@ -1,0 +1,621 @@
+openapi: 3.0.2
+servers:
+  # - description: SwaggerHub API Auto Mocking
+  #   url: https://virtserver.swaggerhub.com/OlavHjertaker/AccountingAPI/1.0.0
+  - description: Bilberry API v3
+    url: https://bilberry.test/api/v3/accounting
+info:
+  description: "API for retrieving invoices, vats and payment methods"
+  version: 3.0.0
+  title: Bilberry accounting API
+tags:
+  - name: invoices
+    description: Bilberry invoices
+  - name: ledger accounts
+    description: VATs and payment methods
+paths:
+  /invoices:
+    get:
+      tags:
+        - invoices
+      summary: lists invoices
+      operationId: getInvoices
+      description: "Returns invoices from selected time period"
+      parameters:
+        - in: query
+          name: start_date
+          description: pass an optional start date (default is current day) in YYY-mm-dd format
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: end_date
+          description: pass an optional end date (default is current day) in YYY-mm-dd format
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: date_field
+          description: date field to use
+          schema:
+            type: string
+            enum: [invoice_date, delivery_date, updated_at, completed_at]
+        - in: query
+          name: type
+          description: Filter by invoices or credit notes (all by default)
+          schema:
+            type: string
+            enum: [invoice, creditnote]
+      responses:
+        '200':
+          description: Invoices matching selected filters
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/InvoiceList'
+        '400':
+          description: Invalid input parameters
+        '500':
+          description: An error occurred while fetching data
+
+  /invoices/{invoice_id}:
+    get:
+      tags:
+        - invoices
+      summary: "Lookup single invoice"
+      operationId: getInvoice
+      description: "Find specified invoice"
+      parameters:
+        - in: path
+          name: invoice_id
+          description: "Invoice ID to look up"
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "Invoice found"
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/InvoiceShow'
+        '404':
+          description: Invoice not found
+        '500':
+          description: An error occurred while fetching data
+
+  /vats:
+    get:
+      tags:
+        - ledger accounts
+      summary: "List all VATs"
+      operationId: getVats
+      description: "Get VAT details"
+      responses:
+        '200':
+          description: "VATs found"
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/VatsArray'
+        '500':
+          description: An error occurred while fetching data
+  /payment-methods:
+    get:
+      tags:
+        - ledger accounts
+      summary: "List all payment methods"
+      operationId: getPaymentMethods
+      description: "Get Payment Method details"
+      responses:
+        '200':
+          description: "Payment methods found found"
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/PaymentMethodsArray'
+        '500':
+          description: An error occurred while fetching data
+          
+components:
+  schemas:
+    PaymentMethodsArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/PaymentMethod'
+    PaymentMethod:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 23
+        name:
+          type: string
+          example: "Online"
+        is_public:
+          type: integer
+          format: boolean
+          example: 1
+          description: "Value is 0 if only used internally, and not an option to be used on user created invoices."
+        ledger_account:
+          type: integer
+          nullable: true
+          description: "Account for bookkeeping"
+          example: 1915
+          
+    VatsArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/Vat'
+    Vat:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 3
+        name:
+          type: string
+          example: "Car Charter 15% Tax"
+          description: "Internal name for VAT"
+        display_name:
+          type: string
+          example: "Airport transfer 15% Tax"
+          description: "User-facing name for VAT"
+        decimal:
+          type: number
+          description: "VAT % as decimal 1.25 for 25%"
+          example: "1.25"
+        ledger_account:
+          type: integer
+          example: 3018
+          nullable: true
+        visbook_product_id:
+          type: integer
+          example: 23
+          description: "VisBook product ID, if Bilberry has integration with VisBook"
+          nullable: true
+        visbook_unit_id:
+          type: integer
+          example: 514
+          description: "VisBook unit ID, if Bilberry has integration with VisBook"
+          nullable: true
+        is_giftcard:
+          type: integer
+          format: boolean
+          example: 1
+          description: "1 if VAT is default VAT for giftcards. Only one VAT has this enabled"
+        is_deposit:
+          type: integer
+          format: boolean
+          example: 0
+          description: "1 if VAT is default VAT for deposit. Only one VAT has this enabled"
+        is_accommodation:
+          type: integer
+          format: boolean
+          example: 0
+          description: "1 if VAT is default VAT for accommodation product. Only one VAT has this enabled"
+        department_id:
+          type: integer
+          nullable: true
+          example: 8
+          description: "Department ID from accounting system. This is used for subaccount 1"
+        subaccount2:
+          type: string
+          nullable: true
+          example: "00"
+          description: "Subaccount 2, used for deferred revenue turnover"
+        subaccount3:
+          type: string
+          nullable: true
+          example: "003"
+          description: "Subaccount 3, used for deferred revenue turnover"
+        is_hidden:
+          type: integer
+          format: boolean
+          example: 0
+          description: "1 if VAT is no longer used, and should be hidden from the fron-end so it cannot be used in new orders"
+        created_at:
+          type: string
+          format: date-time
+          example: "2021-05-10T14:25:06.000000+02:00"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2021-05-14T14:25:06.000000+02:00"
+        deleted_at:
+          type: string
+          format: date-time
+          example: "2021-05-19T14:25:06.000000+02:00"
+          nullable: true
+      
+    InvoiceShow:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/InvoiceItem'
+        meta: 
+          $ref: '#/components/schemas/InvoiceShowMeta'
+        warnings:
+         $ref: '#/components/schemas/InvoiceWarnings'
+        
+        
+    InvoiceList:
+      type: object
+      properties:
+        data: 
+          $ref: '#/components/schemas/InvoicesArray'
+        meta:
+         $ref: '#/components/schemas/InvoicesMeta'
+        warnings:
+         $ref: '#/components/schemas/InvoiceWarnings'
+
+    InvoiceWarnings:
+      type: array
+      description: "Warnings if ledger accounts are missing for VATs or Payment Mathods"
+      items:
+        type: string
+        example: "VAT ledger missing for VAT IDs: 28, 68, 27"
+    
+    InvoiceShowMeta:
+      type: object
+      properties:
+        invoice_id:
+          type: integer
+          example: 1234
+    InvoicesMeta:
+      type: object
+      properties:
+        subtotal:
+          type: number
+          description: "Total ex. VAT from orderlines"
+          example: 120000
+        payments_total:
+          type: number
+          description: "Total payments"
+          example: 100000
+        balance:
+          type: number
+          description: "subtotal - payments_total for open and closed invoices (cancelled invoices are ignored)"
+          example: 20000
+        start_date:
+          type: string
+          format: date-time
+          example: 2024-07-01 00:00:00
+        end_date:
+          type: string
+          format: date-time
+          example: 2024-07-31 23:59:59
+        date_field:
+          type: string
+          enum: [invoice_date, delivery_date, updated_date, completed_date]
+          example: "delivery_date"
+        type:
+          type: string
+          enum: [invoice, creditnote]
+          example: "invoice"
+        item_count:
+          type: integer
+          description: "Number of invoices returned"
+          example: 52
+          
+    InvoicesArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/InvoiceItem'
+    InvoiceItem:
+      type: object
+      required:
+        - invoice_id
+        - type
+        - status
+      properties:
+        invoice_id:
+          type: integer
+          example: 1234
+        type:
+          type: string
+          description: "Specifies if the document is an invoice or credit note"
+          enum: [invoice, creditnote]
+          example: invoice
+        status:
+          type: string
+          description: "The invoice status can be open(unpaid/unrefunded), closed(paid/refunded) or canceled "
+          enum: [open, closed, cancelled]
+          example: open
+        invoice_date:
+          type: string
+          format: date-time
+          example: 2024-07-10T15:08:39.000000+02:00
+        delivery_date:
+          type: string
+          format: date-time
+          example: 2024-07-10T15:08:39.000000+02:00
+        invoice_due_date:
+          type: string
+          format: date-time
+          example: 2024-07-10T15:08:39.000000+02:00
+        closed_date:
+          type: string
+          format: date-time
+          example: 2024-07-10T15:08:39.000000+02:00
+          nullable: true
+        cancelled_date:
+          type: string
+          format: date-time
+          example: 2024-07-10T15:08:39.000000+02:00
+          nullable: true
+        updated_date:
+          type: string
+          format: date-time
+          example: 2024-07-10T15:08:39.000000+02:00
+        currency:
+          type: string
+          example: NOK
+        creditnote_of_invoice_id:
+          type: integer
+          example: 1235
+          description: "Credit notes will the ID of the original invoice it was created from"
+          nullable: true
+        attention:
+          type: string
+          description: "Attention field can be used by travel agents to specify a reference code for the booking or the person the booking is for"
+          example: "att: John Doe"
+        invoice_type_id:
+          type: integer
+          example: 1
+        invoice_type:
+          type: string
+          example: Faktura
+        payment_method_id:
+          type: integer
+          example: 1
+        payment_method:
+          type: string
+          example: Invoice
+        subtotal:
+          type: number
+          example: 1000
+        payments_total:
+          type: number
+          example: 1000
+        balance:
+          type: number
+          description: "subtotal - payments_total. 0 if paid in full. Negative if overpaid, and positive if partially paid."
+          example: 0
+        customer:
+          $ref: '#/components/schemas/Customer'
+    Customer:
+      required:
+        - name
+      type: object
+      properties:
+        name:
+          type: string
+          example: "ACME Hotel"
+        email:
+          type: string
+          format: email
+          example: 'reception@acmehotel.com'
+        phone:
+          type: integer
+          example: 408-867-5309
+        address1:
+          type: string
+          example: "Flat 2B"
+        address2:
+          type: string
+          example: "12th Street" 
+        zip:
+          type: string
+          example: "6004"
+        city:
+          type: string
+          example: "ÅLESUND"
+        country:
+          type: string
+          example: "Norge"
+        bilberryCustomer:
+          $ref: '#/components/schemas/BilberryCustomer'
+        salesperson:
+          $ref: '#/components/schemas/Salesperson'
+        orderlines:
+          $ref: '#/components/schemas/OrderlinesArray'
+        payments:
+          $ref: '#/components/schemas/PaymentsArray'
+        subtotal:
+          type: number
+          description: "Total inc VAT for order lines"
+          example: 4320
+        payments_total:
+          type: number
+          description: "Total payments"
+          example: 4320
+        balance:
+          type: number
+          description: "Outstanding payments. 0 if paid."
+          example: 0
+          
+    BilberryCustomer:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 100012
+        name:
+          type: string
+          example: "ACME Hotel"
+        email:
+          type: string
+          format: email
+          example: "reception@acmehotel.com"
+        phone:
+          type: integer
+          example: 408-867-5309
+        address1:
+          type: string
+          example: "Flat 2B"
+        address2:
+          type: string
+          example: "12th Street" 
+        zip:
+          type: string
+          example: "6004"
+        city:
+          type: string
+          example: "ÅLESUND"
+        country:
+          type: string
+          example: "Norge"
+        org_nr:
+          type: string
+          example: "9812345687"
+        is_agent:
+          type: integer
+          example: 1
+        email_invoice:
+          type: string
+          format: email
+          example: "reception@acmehotel.com"
+    Salesperson:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2072
+        name:
+          type: string
+          example: "John Salesman"
+        external_ref: 
+          type: string
+          description: External reference can be added in Bilberry if needed to connect with a salesperson in the accounting system
+          example: "134"
+    Payment:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Invoice"
+        descripton:
+          type: string
+          example: "Stripe payment #SHK5G3S"
+        payment_method:
+          type: string
+          example: "Invoice"
+        amount:
+          type: number
+          description: "Payment amount in currency"
+          example: 1000
+        account_ledger:
+          type: integer
+          description: "Bookkeeping account"
+          example: 1905
+    PaymentsArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/Payment'
+    OrderlinesArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/Orderline'
+    Orderline:
+      type: object
+      properties:
+        id: 
+          type: integer
+          example: 22465
+        text:
+          type: string
+          example: "Mountain biking group tour"
+        product:
+          type: string
+          example: "Mountain biking"
+        product_id:
+          type: integer
+          example: 28
+        start:
+          type: string
+          format: date-time
+          example: 2024-07-10T15:00:0.000000+02:00
+        end:
+          type: string
+          format: date-time
+          example: 2024-07-10T15:00:0.000000+02:00
+        unit_price:
+          type: number
+          description: "Price per unit inc VAT before discounts"
+          example: 1200
+        quantity:
+          type: integer
+          example: 4
+        total_price:
+          type: number
+          description: "Total price inc VAT befre discounts"
+          example: 4800
+        discount_percent:
+          type: integer
+          description: "Discount in %"
+          example: "10"
+        discount_amount:
+          type: number
+          description: "Discount amount in currency, calculated from discount_percent and total_price"
+          example: 480
+        inc_vat_amount:
+          type: number
+          description: "Total amount inc VAT after discounts"
+          example: 4320
+        vat_amount:
+          type: number
+          description: "VAT amount in currency"
+          example: 462.86
+        ex_vat_amount:
+          type: number
+          description: "Tota amount ex VAT after discounts"
+          example: 3857.14
+        vat:
+          $ref: '#/components/schemas/Vat'
+        project:
+          $ref: '#/components/schemas/Project'
+        plan:
+          $ref: '#/components/schemas/Plan'
+
+    Project:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 107845
+        name:
+          type: string
+          description: "Bilberry project name"
+          example: "Acme Inc company trip"
+        category_id:
+          type: integer
+          description: "Project category ID"
+        start:
+          type: string
+          format: date
+          description: "Project start date"
+          example: 2024-07-10
+        end:
+          type: string
+          format: date
+          description: "Project end date"
+          example: 2024-07-13
+    Plan:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 35426
+        name:
+          type: string
+          description: "Bilberry plan name"
+          example: "Wildlife Sea Safari"
+        start:
+          type: string
+          format: date-time
+          example: 2024-07-10T12:00:0.000000+02:00
+        end:
+          type: string
+          format: date-time
+          example: 2024-07-10T15:00:0.000000+02:00
