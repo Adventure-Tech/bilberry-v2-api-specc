@@ -594,7 +594,28 @@ components:
           description: "Tota amount ex VAT after discounts"
           example: 3857.14
         vat:
-          $ref: '#/components/schemas/Vat'
+          type: object
+          properties:
+            id: 
+              type: number
+              description: "VAT ID"
+              example: 68
+            name:
+              type: string
+              description: "VAT name"
+              example: "Transport Internal 12%"
+            percent:
+              type: integer
+              description: "VAT %"
+              example: 12
+            account_ledger:
+              type: integer
+              description: "Bookkeeping account"
+              example: 3087
+            department_id:
+              type: integer
+              example: 3
+              description: "Reference to department in accounting system"
         project:
           $ref: '#/components/schemas/Project'
         plan:
