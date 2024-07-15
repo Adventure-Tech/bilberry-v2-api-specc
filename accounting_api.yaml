@@ -1,4 +1,4 @@
-openapi: 3.0.2
+openapi: 3.0.0
 servers:
   # - description: SwaggerHub API Auto Mocking
   #   url: https://virtserver.swaggerhub.com/OlavHjertaker/AccountingAPI/1.0.0
@@ -6,16 +6,18 @@ servers:
     url: https://bilberry.test/api/v3/accounting
 info:
   description: "API for retrieving invoices, vats and payment methods"
-  version: 3.0.0
+  version: 1.0.0
   title: Bilberry accounting API
 tags:
   - name: invoices
     description: Bilberry invoices
-  - name: ledger accounts
+  - name: account ledgers
     description: VATs and payment methods
 paths:
   /invoices:
     get:
+      security:
+        - bearerAuth: []
       tags:
         - invoices
       summary: lists invoices
@@ -42,7 +44,7 @@ paths:
             enum: [invoice_date, delivery_date, updated_at, completed_at]
         - in: query
           name: type
-          description: Filter by invoices or credit notes (all by default)
+          description: Filter by invoices or credit notes (both by default)
           schema:
             type: string
             enum: [invoice, creditnote]
@@ -52,7 +54,50 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/InvoiceList'
+                type: object
+                properties:
+                  data: 
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Invoice'
+                  meta:
+                    type: object
+                    properties:
+                      subtotal:
+                        type: number
+                        description: "Total ex. VAT from orderlines"
+                        example: 120000
+                      payments_total:
+                        type: number
+                        description: "Total payments"
+                        example: 100000
+                      balance:
+                        type: number
+                        description: "subtotal - payments_total for open and closed invoices (cancelled invoices are ignored)"
+                        example: 20000
+                      start_date:
+                        type: string
+                        format: date-time
+                        example: 2024-07-01 00:00:00
+                      end_date:
+                        type: string
+                        format: date-time
+                        example: 2024-07-31 23:59:59
+                      date_field:
+                        type: string
+                        enum: [invoice_date, delivery_date, updated_at, completed_at]
+                        example: "delivery_date"
+                      type:
+                        type: string
+                        enum: [invoice, creditnote]
+                        example: "invoice"
+                      item_count:
+                        type: integer
+                        description: "Number of invoices returned"
+                        example: 52
+                  warnings:
+                   $ref: '#/components/schemas/InvoiceWarnings'
+                  
         '400':
           description: Invalid input parameters
         '500':
@@ -60,6 +105,8 @@ paths:
 
   /invoices/{invoice_id}:
     get:
+      security:
+        - bearerAuth: []
       tags:
         - invoices
       summary: "Lookup single invoice"
@@ -78,7 +125,18 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/InvoiceShow'
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Invoice'
+                  meta: 
+                    type: object
+                    properties:
+                      invoice_id:
+                        type: integer
+                        example: 1234
+                  warnings:
+                   $ref: '#/components/schemas/InvoiceWarnings'
         '404':
           description: Invoice not found
         '500':
@@ -86,8 +144,10 @@ paths:
 
   /vats:
     get:
+      security:
+        - bearerAuth: []
       tags:
-        - ledger accounts
+        - account ledgers
       summary: "List all VATs"
       operationId: getVats
       description: "Get VAT details"
@@ -97,13 +157,17 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/VatsArray'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Vat'
         '500':
           description: An error occurred while fetching data
   /payment-methods:
     get:
+      security:
+        - bearerAuth: []
       tags:
-        - ledger accounts
+        - account ledgers
       summary: "List all payment methods"
       operationId: getPaymentMethods
       description: "Get Payment Method details"
@@ -113,16 +177,50 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/PaymentMethodsArray'
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaymentMethod'
         '500':
           description: An error occurred while fetching data
-          
+
+  /invoice-types:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - account ledgers
+      summary: "List all Bilberry invocie types"
+      operationId: getInvoiceTypes
+      description: "Get Invoice type details"
+      responses:
+        '200':
+          description: "Invoice types found found"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvoiceType'
+        '500':
+          description: An error occurred while fetching data
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT 
   schemas:
-    PaymentMethodsArray:
-      type: array
-      items:
-        $ref: '#/components/schemas/PaymentMethod'
+    InvoiceType:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        name:
+          type: integer
+          example: "Online Booking"
+
     PaymentMethod:
       type: object
       properties:
@@ -143,10 +241,6 @@ components:
           description: "Account for bookkeeping"
           example: 1915
           
-    VatsArray:
-      type: array
-      items:
-        $ref: '#/components/schemas/Vat'
     Vat:
       type: object
       properties:
@@ -228,86 +322,24 @@ components:
           example: "2021-05-19T14:25:06.000000+02:00"
           nullable: true
       
-    InvoiceShow:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/InvoiceItem'
-        meta: 
-          $ref: '#/components/schemas/InvoiceShowMeta'
-        warnings:
-         $ref: '#/components/schemas/InvoiceWarnings'
-        
-        
-    InvoiceList:
-      type: object
-      properties:
-        data: 
-          $ref: '#/components/schemas/InvoicesArray'
-        meta:
-         $ref: '#/components/schemas/InvoicesMeta'
-        warnings:
-         $ref: '#/components/schemas/InvoiceWarnings'
+
 
     InvoiceWarnings:
       type: array
-      description: "Warnings if ledger accounts are missing for VATs or Payment Mathods"
+      description: "Warnings if account ledgers are missing for VATs or Payment Mathods"
       items:
         type: string
         example: "VAT ledger missing for VAT IDs: 28, 68, 27"
     
-    InvoiceShowMeta:
-      type: object
-      properties:
-        invoice_id:
-          type: integer
-          example: 1234
-    InvoicesMeta:
-      type: object
-      properties:
-        subtotal:
-          type: number
-          description: "Total ex. VAT from orderlines"
-          example: 120000
-        payments_total:
-          type: number
-          description: "Total payments"
-          example: 100000
-        balance:
-          type: number
-          description: "subtotal - payments_total for open and closed invoices (cancelled invoices are ignored)"
-          example: 20000
-        start_date:
-          type: string
-          format: date-time
-          example: 2024-07-01 00:00:00
-        end_date:
-          type: string
-          format: date-time
-          example: 2024-07-31 23:59:59
-        date_field:
-          type: string
-          enum: [invoice_date, delivery_date, updated_date, completed_date]
-          example: "delivery_date"
-        type:
-          type: string
-          enum: [invoice, creditnote]
-          example: "invoice"
-        item_count:
-          type: integer
-          description: "Number of invoices returned"
-          example: 52
-          
-    InvoicesArray:
-      type: array
-      items:
-        $ref: '#/components/schemas/InvoiceItem'
-    InvoiceItem:
+    Invoice:
       type: object
       required:
         - invoice_id
         - type
         - status
+        - invoice_date
+        - delivery_date
+        - invoice_due_date
       properties:
         invoice_id:
           type: integer
@@ -334,17 +366,17 @@ components:
           type: string
           format: date-time
           example: 2024-07-10T15:08:39.000000+02:00
-        closed_date:
+        closed_at:
           type: string
           format: date-time
           example: 2024-07-10T15:08:39.000000+02:00
           nullable: true
-        cancelled_date:
+        cancelled_at:
           type: string
           format: date-time
           example: 2024-07-10T15:08:39.000000+02:00
           nullable: true
-        updated_date:
+        updated_at:
           type: string
           format: date-time
           example: 2024-07-10T15:08:39.000000+02:00
@@ -354,8 +386,12 @@ components:
         creditnote_of_invoice_id:
           type: integer
           example: 1235
-          description: "Credit notes will the ID of the original invoice it was created from"
+          description: "For credit notes: the ID of the original invoice it was created from"
           nullable: true
+        billing_info:
+          $ref: '#/components/schemas/BillingInfo'
+        salesperson:
+          $ref: '#/components/schemas/Salesperson'
         attention:
           type: string
           description: "Attention field can be used by travel agents to specify a reference code for the booking or the person the booking is for"
@@ -372,6 +408,15 @@ components:
         payment_method:
           type: string
           example: Invoice
+        orderlines:
+          type: array
+          items:
+            $ref: '#/components/schemas/Orderline'
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
+
         subtotal:
           type: number
           example: 1000
@@ -382,9 +427,10 @@ components:
           type: number
           description: "subtotal - payments_total. 0 if paid in full. Negative if overpaid, and positive if partially paid."
           example: 0
-        customer:
-          $ref: '#/components/schemas/Customer'
-    Customer:
+        
+        
+          
+    BillingInfo:
       required:
         - name
       type: object
@@ -414,28 +460,11 @@ components:
         country:
           type: string
           example: "Norge"
-        bilberryCustomer:
-          $ref: '#/components/schemas/BilberryCustomer'
-        salesperson:
-          $ref: '#/components/schemas/Salesperson'
-        orderlines:
-          $ref: '#/components/schemas/OrderlinesArray'
-        payments:
-          $ref: '#/components/schemas/PaymentsArray'
-        subtotal:
-          type: number
-          description: "Total inc VAT for order lines"
-          example: 4320
-        payments_total:
-          type: number
-          description: "Total payments"
-          example: 4320
-        balance:
-          type: number
-          description: "Outstanding payments. 0 if paid."
-          example: 0
+        customer:
+          $ref: '#/components/schemas/Customer'
+
           
-    BilberryCustomer:
+    Customer:
       type: object
       properties:
         id:
@@ -509,14 +538,7 @@ components:
           type: integer
           description: "Bookkeeping account"
           example: 1905
-    PaymentsArray:
-      type: array
-      items:
-        $ref: '#/components/schemas/Payment'
-    OrderlinesArray:
-      type: array
-      items:
-        $ref: '#/components/schemas/Orderline'
+
     Orderline:
       type: object
       properties:
