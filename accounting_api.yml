@@ -2,9 +2,6 @@ openapi: 3.0.0
 servers:
   # - description: SwaggerHub API Auto Mocking
   #   url: https://virtserver.swaggerhub.com/OlavHjertaker/AccountingAPI/1.0.0
-  # Added by API Auto Mocking Plugin
-  - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/OlavHjertaker/AccountingAPI/1.0.0
   - description: Bilberry API v3
     url: https://bilberry.test/api/v3/accounting
 info:
