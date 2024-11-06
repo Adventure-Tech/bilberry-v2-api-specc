@@ -230,7 +230,7 @@ paths:
             type: integer
       responses:
         '200':
-          description: "Success: Invoice marked as paid"
+          description: "Success: Invoice external data found"
           content:
             application/json:
               schema:
