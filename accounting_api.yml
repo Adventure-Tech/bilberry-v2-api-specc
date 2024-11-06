@@ -168,6 +168,90 @@ paths:
         '500':
           description: "An error occurred while fetching data"
 
+
+  /invoices/{invoice_id}/external:
+    patch:
+      security:
+        - bearerAuth: []
+      tags:
+        - external
+      summary: "Set external ID and data"
+      operationId: setExternal
+      description: "Set accounting system document ID and data related to the Bilberry invoice. This will let Bilberry know that the invoice has been exported to the accounting system and Bilberry can show the ID in the external system to the end user"
+      parameters:
+        - in: path
+          name: invoice_id
+          description: "Invoice ID store related data for"
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - external_id
+              properties:
+                external_id:
+                  type: string
+                external_data:
+                  type: object
+            example:
+              external_id: "ref12345"
+              external_data: {
+                "field1": "value 1",
+                "more_data": {
+                  "more values": "more info"
+                }
+              }
+      responses:
+        '200':
+          description: "Success: Invoice external data updated"
+        '404':
+          description: "Invoice not found"
+        '500':
+          description: "An error occurred while storing external data"
+
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - external
+      summary: "Get the external ID and data"
+      operationId: getExternal
+      description: "Get the external ID and data stored on the Bilberry invoice"
+      parameters:
+        - in: path
+          name: invoice_id
+          description: "Invoice ID to retrieve data for"
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "Success: Invoice marked as paid"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invoice_id:
+                    type: integer
+                    example: 1234
+                  external_id:
+                    type: string
+                    example: "ref4321"
+                  external_data:
+                    type: object
+                    example: {
+                      "test": "data"
+                    }
+        '404':
+          description: "Invoice not found"
+        '500':
+          description: "An error occurred while fetching data"
+
   /vats:
     get:
       security:
