@@ -261,6 +261,13 @@ paths:
       summary: "List all VATs"
       operationId: getVats
       description: "Get VAT details"
+      parameters:
+        - in: query
+          name: default_only
+          description: Set default_only=1 to only return default ledger per VAT %
+          required: false
+          schema:
+            type: integer
       responses:
         '200':
           description: "VATs found"
@@ -393,6 +400,11 @@ components:
           format: boolean
           example: 0
           description: "1 if VAT is default VAT for deposit. Only one VAT has this enabled"
+        is_default:
+          type: integer
+          format: boolean
+          example: 0
+          description: "1 if VAT is default VAT for this VAT %. Only one per VAT % has this enabled"
         is_accommodation:
           type: integer
           format: boolean
@@ -537,6 +549,8 @@ components:
           type: number
           description: "subtotal - payments_total. 0 if paid in full. Negative if overpaid, and positive if partially paid."
           example: 0
+        warnings:
+          $ref: '#/components/schemas/InvoiceWarnings'
 
 
 
@@ -605,6 +619,9 @@ components:
         country:
           type: string
           example: "Norge"
+        country_code:
+          type: string
+          example: "NO"
         org_nr:
           type: string
           example: "9812345687"
