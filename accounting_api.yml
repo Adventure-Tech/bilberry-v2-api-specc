@@ -584,6 +584,9 @@ components:
         country:
           type: string
           example: "Norge"
+        country_code:
+          type: string
+          example: "NO"
         customer:
           $ref: '#/components/schemas/Customer'
 
