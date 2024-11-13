@@ -748,7 +748,11 @@ components:
             department_id:
               type: integer
               example: 3
-              description: "Reference to department in accounting system"
+              description: "Internal Bilberry department ID"
+            department_ext_reference:
+              type: string
+              example: "bergen-office"
+              description: "Reference to department in external accounting system"
         project:
           $ref: '#/components/schemas/Project'
         plan:
