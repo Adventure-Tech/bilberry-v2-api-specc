@@ -695,10 +695,14 @@ components:
           type: string
           format: date-time
           example: 2024-07-10T15:00:0.000000+02:00
-        unit_price:
+        unit_price_inc_vat:
           type: number
           description: "Price per unit inc VAT before discounts"
-          example: 1200
+          example: 2450
+        unit_price_ex_vat:
+            type: number
+            description: "Price per unit ex VAT before discounts"
+            example: 2187.50
         quantity:
           type: integer
           example: 4
