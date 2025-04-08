@@ -1,0 +1,1540 @@
+openapi: '3.0.2'
+info:
+  title: Bilberry Data API
+  version: 1.0.0
+  description: |-
+    This is a private API for Bilberry. It is used to get information about products, product catalogs, orders and reservations. The API is meant to be used for collecting private data from your Bilberry Base installation. The secret token must be used on all of these endpoints, as it can be sensitive information for your business.
+servers:
+  - url: https://bilberry.test/api/data
+tags:
+  - name: Orders
+    description: Contains information about your orders.
+  - name: Products
+    description: Contains information about your products.
+  - name: Customers
+    description: Gets information about your customers.
+  - name: Events
+    description: Contains information about your private events
+  - name: Tours
+    description: Contains information about your tours
+  - name: Users
+    description: Contains information about your users
+  - name: leads
+    description: Contains information about your leads
+  - name: Tasks
+    description: Contains information about your tasks
+  - name: Notes
+    description: Contains information about your notes
+  - name: Plans
+    description: Contains information about your plans (implementations of your products)
+  - name: Threads
+    description: Contains information about your threads (communication with end customers)
+paths:  
+  /Orders:
+    get:
+      tags:
+        - 'Orders'
+      summary: Gets all orders
+      description: Get all orders
+      operationId: getOrders
+      parameters:
+        - name: start
+          in: query
+          description: get all orders created on and after start date
+          required: false
+          explode: true
+          schema:
+            type: string
+        - name: end
+          in: query
+          description: get all orders created on and before end date
+          required: false
+          explode: true
+          schema:
+            type: string
+        - name: updated_at_gt
+          in: query
+          description: get all orders updated after date
+          required: false
+          explode: true
+          schema:
+            type: string
+        - name: ids
+          in: query
+          description: Comma seperated string. Will only get product-catalogss within range of id's
+          required: false
+          explode: true
+          schema:
+            type: string
+        - name: hash
+          in: query
+          description: get all orders with this hash
+          required: false
+          explode: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Orders'
+      security:
+        - secret_token:
+            - read:orders
+  /products:
+    get:
+      tags:
+        - 'Products'
+      summary: Gets all products
+      description: Gets all products
+      operationId: getProducts
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+      security:
+        - secret_token:
+            - read:products
+  /customers:
+    get:
+      tags:
+        - 'Customer'
+      summary: Gets all customers
+      description: gets all customers
+      operationId: getCustomers
+      parameters:
+        - name: agent
+          in: path
+          description: Only returns agents, if true
+          required: true
+          schema:
+            type: boolean
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+      security:
+        - secret_token:
+            - read:customer
+  /customers/{customerId}:
+    get:
+      tags:
+        - 'Customer'
+      summary: Gets a single customer
+      description:  Gets a single customer
+      operationId: getCustomer
+      parameters:
+        - name: agent
+          in: path
+          description: Only returns agent, if true
+          required: true
+          schema:
+            type: boolean
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+      security:
+        - secret_token:
+            - read:customer
+  /events:
+    get:
+      tags:
+        - 'Event'
+      summary: Gets all events
+      description:  Gets all events
+      operationId: getEvent
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+      security:
+        - secret_token:
+            - read:event
+  /events:
+    post:
+      tags:
+        - Event
+      summary: Create an event
+      description: create an event
+      operationId: createEvent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventRequest'
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+  /events/{eventId}:
+    get:
+      tags:
+        - Event
+      summary: Get a single event
+      description: get a single event
+      operationId: getEvent
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/eventResponse'
+  /events/{eventId}/plans:
+    get:
+      tags:
+        - Event plans
+      summary: Get all plans for an event
+      description: get all plans for an event
+      operationId: getEventPlans
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+  /events/{eventId}/notes:
+    get:
+      tags:
+        - Event notes
+      summary: Get all notes for an event
+      description: Get all notes for an event
+      operationId: getEventNotes
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteResponse'
+    /events/{eventId}/orders:
+    get:
+      tags:
+        - Event orders
+      summary: Gets all event orders
+      description: Gets all event orders
+      operationId: getEventOrders
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Orders'
+  /events/{eventId}/tasks:
+    get:
+      tags:
+        - Event tasks
+      summary: Get all tasks for an event
+      description: Get all tasks for an event
+      operationId: getEventTasks
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+  /events/{eventId}/thread:
+    get:
+      tags:
+        - Event threads
+      summary: Get all threads for an event
+      description: Get all threads for an event
+      operationId: getEventTasks
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Thread'
+  /tours:
+    get:
+      tags:
+        - Tour
+      summary: Get all tours
+      description: Get all tours
+      operationId: getTours
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tours'
+  /tours/{tourId}:
+    get:
+      tags:
+        - Tour
+      summary: Get single tour
+      description: Get single tour
+      operationId: getTour
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tour'
+    /tours/{tourId}/plans:
+      get:
+        tags:
+          - Tour plans
+        summary: Get all plans for an tour
+        description: get all plans for an tour
+        operationId: getTourPlans
+        responses:
+          200:
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/PlanResponse'
+    /tours/{tourId}/notes:
+      get:
+        tags:
+          - Tour notes
+        summary: Get all notes for an tour
+        description: Get all notes for an tour
+        operationId: getTourNotes
+        responses:
+          200:
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/NoteResponse'
+      /tours/{tourId}/orders:
+      get:
+        tags:
+          - Tour orders
+        summary: Gets all tour orders
+        description: Gets all tour orders
+        operationId: getTourOrders
+        responses:
+          200:
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Orders'
+    /tours/{tourId}/tasks:
+      get:
+        tags:
+          - Tour tasks
+        summary: Get all tasks for an tour
+        description: Get all tasks for an tour
+        operationId: getTourTasks
+        responses:
+          200:
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Task'
+    /tours/{tourId}/thread:
+      get:
+        tags:
+          - Tour threads
+        summary: Get all threads for an tour
+        description: Get all threads for an tour
+        operationId: getTourTasks
+        responses:
+          200:
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Thread'
+
+components:
+  schemas:
+    ProductCatalogs:
+      type: array 
+      items:
+        $ref: '#/components/schemas/ProductCatalog' 
+    ProductCatalog:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          default: 10
+        name:
+          type: string
+          default: "Internal name: For example Rib safari"
+        description: 
+          type: string
+          default: "Internal description: For example A rib safari" 
+        web_name: 
+          type: string
+          default: "Gets translated name, meant for external use: For example Rib Safari to Trollfjorden" 
+        web_url: 
+          type: string
+          default: "Gets translated url to which page on your website it is meant to be used."  
+        web_short_description: 
+          type: string
+          default: "Gets translated short description, meant for external use. Will be HTML"   
+        web_full_descrition: 
+          type: string
+          default: "Gets translated full description, meant for external use. Will be HTML."   
+        web_additional_info: 
+          type: string
+          default: "Gets translated additional info, meant for external use. Will be HTML."   
+        web_times: 
+          type: string
+          default: "Gets departure times. Manually entered string."
+        web_disclaimer: 
+          type: string
+          default: "Gets translated additional info, meant for external use. Will be HTML."
+        is_accommodation:
+          type: boolean
+          default: 0
+        is_rental:
+          type: boolean
+          default: 0
+        difficulty:
+          type: string
+          default: 'easy'
+          enum:
+            - easy
+            - medium
+            - hard
+        duration:
+          type: integer
+          default: 180
+        from_price:
+          type: integer
+          default: 1000
+        from_age:
+          type: integer
+          default: 12
+        default_prices:
+          type: array
+          default: [
+                {
+                    "id": 1,
+                    "price_category_id": 1,
+                    "name": "Adult",
+                    "price_type": "Adult",
+                    "price": 1000,
+                    "retail_price": 1000,
+                    "commission": null,
+                    "vat_amount": 99.13,
+                    "occupancy": 1,
+                    "age_from": null,
+                    "age_to": null,
+                    "rates": [
+                        {
+                            "name": "Food",
+                            "price": 300,
+                            "retail_price": 300,
+                            "vat": 15,
+                            "vat_id": 2,
+                            "vat_amount": 39.13,
+                            "retail_vat_amount": 39.13
+                        },
+                        {
+                            "name": "Guide",
+                            "price": 400,
+                            "retail_price": 400,
+                            "vat": 0,
+                            "vat_id": 5,
+                            "vat_amount": 0,
+                            "retail_vat_amount": 0
+                        },
+                        {
+                            "name": "Tour",
+                            "price": 300,
+                            "retail_price": 300,
+                            "vat": 25,
+                            "vat_id": 1,
+                            "vat_amount": 60,
+                            "retail_vat_amount": 60
+                        }
+                    ]
+                },
+                {
+                    "id": 2,
+                    "price_category_id": 2,
+                    "name": "Child",
+                    "price_type": "Child",
+                    "price": 700,
+                    "retail_price": 700,
+                    "commission": null,
+                    "vat_amount": 140,
+                    "occupancy": 1,
+                    "age_from": 0,
+                    "age_to": 10,
+                    "rates": [
+                        {
+                            "name": "Child",
+                            "price": 700,
+                            "retail_price": 700,
+                            "vat": 25,
+                            "vat_id": 1,
+                            "vat_amount": 140,
+                            "retail_vat_amount": 140
+                        }
+                    ]
+                }
+            ]
+        meet_up_address:
+          type: integer
+          default: "Entrance to the pier"
+        location:
+          type: object
+          $ref: '#/components/schemas/Location'
+        plan_category_name:
+          type: string
+          nullable: true
+          default: Rib
+        currency:
+          type: string
+          enum: 
+           - NOK
+           - EUR
+           - GBP
+    Orders:
+      type: array
+      properties:
+          id:
+            type: integer
+            format: int64
+            default: 10
+          name:
+            type: string
+            default: "John Doe"
+          email:
+            type: string
+            default: "john@doe.no"
+          phone:
+            type: string
+            default: "+4712345678"
+          arrived:
+            type: boolean
+            default: false
+          arrived_at:
+            type: string
+            format: date-time
+            nullable: true
+            default: null
+          invoice_id:
+            type: integer
+            format: int64
+            default: 10
+          paid_at:
+            type: string
+            format: date-time
+            nullable: true
+            default: null
+          booker_name:
+            type: string
+            default: "John Doe"
+          booker_email:
+            type: string
+            default: "john@doe.no"
+          booker_phone:
+            type: string
+            default: "+4712345678"
+          invoice_date:
+            type: string
+            format: date-time
+            default: "2023-10-25 11:20"
+          invoice_due_date:
+            type: string
+            format: date-time
+            default: "2023-10-25 11:20"
+          payment_method_id:
+            type: integer
+            format: int64
+            default: 10
+          payment_method:
+            type: string
+            default: "online"
+          "max_delivery_date":
+            type: string
+            format: date-time
+            default: "2023-10-25 11:20"
+          items:
+            type: array
+            default: [
+              {
+                "id": 1,
+                "name": "Rib safari - Adult",
+                "quantity": 1,
+                "pax": 1,
+                "discount": 10,
+                "order_id": 10,
+                "plan_id": 8,
+                "delivery_date": "2023-10-25 11:20",
+                "prices": [
+                  {
+                    "id": 1,
+                    "price": 1000,
+                    "vat": 25,
+                    "order_data_id": 2,
+                  }
+                ]
+              }
+            ]
+
+    Products:
+      type: array 
+      items:
+        $ref: '#/components/schemas/Product'  
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          default: 10
+        title:
+          type: string
+          default: "Internal name: For example Rib safari"
+        description: 
+          type: string
+          default: "Internal description: For example A rib safari" 
+        web_title: 
+          type: string
+          default: "Gets translated name, meant for external use: For example Rib Safari to Trollfjorden" 
+        web_url: 
+          type: string
+          default: "Gets translated url to which page on your website it is meant to be used."  
+        web_short_description: 
+          type: string
+          default: "Gets translated short description, meant for external use. Will be HTML"   
+        web_full_descrition: 
+          type: string
+          default: "Gets translated full description, meant for external use. Will be HTML."   
+        web_additional_info: 
+          type: string
+          default: "Gets translated additional info, meant for external use. Will be HTML."   
+        web_times: 
+          type: string
+          default: "Gets departure times. Manually entered string."
+        web_disclaimer: 
+          type: string
+          default: "Gets translated additional info, meant for external use. Will be HTML."
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        cancellation_time:
+          type: integer
+          description: The number of minutes before start date a booking can be cancelled.
+          default: 1440
+        cutoff_time:
+          type: integer
+          description: The number of minutes before start date a booking can be booked. Can be negative.
+          default: 1440
+        product_catalog_id:
+          type: integer
+          description: The id of the product catalog this product belongs to.
+          default: 10  
+        capacity:
+          type: integer
+          description: The capacity that is left on this particular product.
+          default: 10  
+        difficulty:
+          type: string
+          default: 'easy'
+          enum:
+            - easy
+            - medium
+            - hard
+        from_price:
+          type: integer
+          default: 1000
+        from_age:
+          type: integer
+          default: 12
+        guest_list_dependant:
+          type: boolean
+          description: If guest list dependant, this means that a reservation against this product must contain all mandatory guest list fields for all PAX
+          default: true
+        guest_list_entities:
+          type: array 
+          description: The guest list entities that can be filled out for each PAX. Mandatory means that the field must be filled out for all PAX. Postpone means that the field can be filled out later.
+          default: [
+                {
+                    "id": 1,
+                    "title": "Name",
+                    "key": "name",
+                    "type": "text",
+                    "mandatory": 1,
+                    "postpone": 0
+                },
+                {
+                    "id": 2,
+                    "title": "Pick size of your dry suit (S, M, L, XL)",
+                    "key": "pick_size_of_your_dry_suit_s_m_l_xl",
+                    "type": "text",
+                    "mandatory": 1,
+                    "postpone": 1
+                }
+          ]
+        order_entity_dependant:
+          type: boolean
+          description: If order entity dependant, this means that a reservation against this product must contain all mandatory order entity fields for the order. The difference between this and guest list dependant is that this is for the order, not for each PAX.
+          default: true
+        order_entities:
+          type: array
+          description: The order entities that can be filled out for the order. Mandatory means that the field must be filled out for the order. Postpone means that the field can be filled out later.
+          default: [
+           {
+                    "id": 1,
+                    "title": "Allergies",
+                    "key": "allergies",
+                    "type": "checkbox",
+                    "mandatory": 0,
+                    "postpone": 0
+                },
+                {
+                    "id": 2,
+                    "title": "Postal code?",
+                    "key": "postal_code",
+                    "type": "text",
+                    "mandatory": 0,
+                    "postpone": 0
+                }
+                ]
+        prices:
+          type: array
+          description: The prices for this product. These ID's must be used when creating a reservation against this product, and NOT the id from the default_prices on the product catalog.
+          default: [
+                {
+                    "id": 10123,
+                    "price_category_id": 1,
+                    "name": "Adult",
+                    "price_type": "Adult",
+                    "price": 1000,
+                    "retail_price": 1000,
+                    "commission": null,
+                    "vat_amount": 99.13,
+                    "occupancy": 1,
+                    "age_from": null,
+                    "age_to": null,
+                    "rates": [
+                        {
+                            "name": "Food",
+                            "price": 300,
+                            "retail_price": 300,
+                            "vat": 15,
+                            "vat_id": 2,
+                            "vat_amount": 39.13,
+                            "retail_vat_amount": 39.13
+                        },
+                        {
+                            "name": "Guide",
+                            "price": 400,
+                            "retail_price": 400,
+                            "vat": 0,
+                            "vat_id": 5,
+                            "vat_amount": 0,
+                            "retail_vat_amount": 0
+                        },
+                        {
+                            "name": "Tour",
+                            "price": 300,
+                            "retail_price": 300,
+                            "vat": 25,
+                            "vat_id": 1,
+                            "vat_amount": 60,
+                            "retail_vat_amount": 60
+                        }
+                    ]
+                },
+                {
+                    "id": 20345,
+                    "price_category_id": 2,
+                    "name": "Child",
+                    "price_type": "Child",
+                    "price": 700,
+                    "retail_price": 700,
+                    "commission": null,
+                    "vat_amount": 140,
+                    "occupancy": 1,
+                    "age_from": 0,
+                    "age_to": 10,
+                    "rates": [
+                        {
+                            "name": "Child",
+                            "price": 700,
+                            "retail_price": 700,
+                            "vat": 25,
+                            "vat_id": 1,
+                            "vat_amount": 140,
+                            "retail_vat_amount": 140
+                        }
+                    ]
+                }
+            ]
+        location:
+          type: object
+          $ref: '#/components/schemas/Location'
+    ProductsGroupedByDate:
+      type: object
+      default: {
+        "2023-10-30": [
+          ... will contain bookable products within this day. See products scheme
+        ]
+      }
+    Location:
+      type: object
+      properties:
+        city:
+          type: string
+          default: "Svolvær"
+        address:
+          type: string
+          default: "Torggata 1"
+        destination:
+          type: object
+          properties: 
+            name:
+              type: string
+              default: "Lofoten"
+            region:
+              type: string
+              default: "Northern Norway"
+        geometry:
+          type: object
+          properties:
+            type: 
+              type: string
+              default: "Point"
+            coordinates:
+              type: array
+              default: [
+                14.4138412,
+                68.386917
+              ]
+        media:
+          type: object
+          properties:
+            image:
+              type: object
+              default: {
+                "url": "https://bilberry.no/images/10/lofoten.jpg"
+              }
+            gallery:
+              type: array
+              default: [
+                {
+                  "url": "https://bilberry.no/images/11/svolvar.jpg"
+                }
+              ]
+    ExtrasRequest:
+      type: object
+      required: [
+        tours
+      ]
+      properties:
+        tours:
+          type: array
+          description: "The product ids that you want to list extras for"
+          default: [
+            1,
+            2
+          ]
+    ReservationRequest:
+      type: object
+      required: [
+        name,
+        email,
+        phone,
+        country,
+        tours,
+        url,
+        termsUrl
+      ]
+      properties:
+        name:
+          type: string
+          description: "Name of the booker"
+          default: "John Doe"
+        email:
+          type: string
+          description: "Email of the booker"
+          default: "john@doe.no"
+        phone:
+          type: string
+          description: "Phone of the booker. Must be in given format."
+          default: "+4712345678"
+        address1: 
+          type: string
+          description: "Address of the booker"
+          default: "Slottsgata 1"
+        zip: 
+          type: string
+          description: "Postal code of the booker"
+          default: "8300"
+        city: 
+          type: string
+          description: "City of the booker"
+          default: "Svolvær"
+        giftcard: 
+          type: string
+          description: Giftcard code, if the booker has a valid giftcard"
+          default: "FGJK5L"
+        tours:
+          type: array
+          description: "The tours that the booker wants to book. Root ID will refer to product.id. Pax.*.id will refer to product.price.id - order_entities and guest_list will use they id of the field as key."
+          default: [
+            {
+              "id": 1,
+              "pax": [
+                {
+                  "id": 10123,
+                  "quantity": 1,
+                }
+              ],
+            
+              "order_entities": [
+                {
+                  "1": "Peanuts",
+                  "2": "1234"
+                }
+              ],
+              "guest_list": [
+                {
+                  "1": "John Doe",
+                  "2": "XL"
+                }
+              ]
+            }
+          ]
+        extras:
+          type: array
+          description: "The extras that the booker wants to book. Root ID will refer to product.id. Pax.*.id will refer to product.price.id - order_entities and guest_list will use they id of the field as key."
+          default: [
+            {
+              "id": 1,
+              "pax": [
+                {
+                  "id": 10123,
+                  "quantity": 1,
+                }
+              ],
+            
+              "order_entities": [
+                {
+                  "1": "Peanuts",
+                  "2": "1234"
+                }
+              ],
+              "guest_list": [
+                {
+                  "1": "John Doe",
+                  "2": "XL"
+                }
+              ]
+            }
+          ]
+        coupon_code:
+          type: string
+          description: "Coupon code to be used for this reservation"
+          default: "WINTER2023"
+        order_note:
+          type: string
+          description: "Note to be added to the order"
+          default: "This is a note"
+        url:
+          type: string
+          description: "URL to the page where the checkout is happening. This will be used to verify with NETS and STRIPE that the checkout can happen from this URL."
+          default: "https://bilberry.no/checkout"
+        termsUrl:
+          type: string
+          description: "URL to the page where terms and conditions are located. This will be sent to NETS."
+    ReservationResponse:
+      type: object 
+      properties:
+        id: 
+          type: integer
+          description: "ID of the reservation"
+          default: 12345
+        invoice_date:
+          type: string
+          format: date-time
+          description: "Date when the invoice was created"
+          default: "2023-10-25T11:20:20.000000Z"
+        invoice_due_date:
+          type: string
+          format: date-time
+          description: "Date when the invoice is due. If not paid within this date, the reservation will be cancelled."
+          default: "2023-10-25T11:35:20.000000Z"
+        name:
+          type: string
+          description: "Name of the booker"
+          default: "John Doe"
+        email:
+          type: string
+          description: "Email of the booker"
+          default: "john@doe.no"
+        phone:
+          type: string
+          description: "Phone of the booker."
+          default: "+4712345678"
+        address1:
+          type: string
+          description: "Address of the booker"
+          nullable: true
+          default: "Slottsgata 1"
+        address2: 
+          type: string
+          description: "Address of the booker"
+          nullable: true
+          default: "Vestre inngang"
+        zip:
+          type: string
+          description: "Postal code of the booker"
+          nullable: true
+          default: "8300"
+        city:
+          type: string
+          description: "City of the booker"
+          nullable: true
+          default: "Svolvær"
+        delivery_date: 
+          type: string
+          format: date-time
+          description: "The latest date of any delivery within the order."
+          default: "2023-11-30T11:20:20.000000Z"
+        total_pax:
+          type: integer
+          description: "Total number of pax in the order"
+          default: 1
+        total:
+          type: integer
+          description: "Total price of the order"
+          default: 1000
+        paid_at:
+          type: string
+          format: date-time
+          description: "Date when the invoice was paid"
+          nullable: true
+          default: null
+        payment_gateway:
+          type: string
+          description: "Payment gateway used for this reservation"
+          default: "stripe"
+          enum:
+            - stripe
+            - nets
+        stripe_key:
+          type: string
+          description: "Stripe key used for this reservation. Is only present if stripe is the payment gateway."
+          nullable: true
+          default: "pk_test_1234567890"
+        stripe_client_secret:
+          type: string
+          description: "Stripe client secret used for this reservation. Is only present if stripe is the payment gateway."
+          nullable: true
+          default: "pi_1234567890_secret_gwe234234"
+        payment_id:
+          type: string
+          description: "Payment ID of the nets payment. Is only present if nets is the payment gateway."
+          nullable: true
+          default: "01234567bfe12324few1234"
+        merchant_id:
+          type: string
+          description: "Merchant ID of the nets payment. Is only present if nets is the payment gateway."
+          nullable: true
+          default: "1234567890"
+        checkout_key: 
+          type: string
+          description: "Checkout key used for this reservation. Is only present if nets is the payment gateway."
+          nullable: true
+          default: "test-checkout-key-12fbg34bm567poi890c"
+    GiftcardRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: "Name of the giftcard buyer"
+          default: "John Doe"
+        email:
+          type: string
+          description: "Email of the giftcard buyer"
+          default: "john@doe.no"
+        phone:
+          type: string
+          description: "Phone of the giftcard buyer"
+          default: "+4712345678"
+        country:
+          type: string
+          description: "Country of the giftcard buyer"
+          default: "Norway"
+        recipient_first_name:
+          type: string
+          description: "First name of the giftcard recipient"
+          default: "Jane"
+        recipient_last_name:
+          type: string
+          description: "Last name of the giftcard recipient"
+          default: "Doe"
+        recipient_email:
+          type: string
+          description: "Email of the giftcard recipient"
+          default: "jane@doe.no"
+        amount:
+          type: integer
+          description: "Amount of the giftcard"
+          default: 1000
+        url: 
+          type: string
+          description: "URL to the page where the checkout is happening. This will be used to verify with NETS and STRIPE that the checkout can happen from this URL."
+          default: "https://bilberry.no/checkout"
+        termsUrl:
+          type: string
+          description: "URL to the page where terms and conditions are located. This will be sent to NETS."
+    GiftcardResponse:
+      type: object
+      properties:
+        id: 
+          type: integer
+          description: "ID of the reservation"
+          default: 12345
+        giftcard_id:
+          type: integer
+          description: "Id/code of the giftcard"
+          default: 5bDKgD0
+        giftcard_expires_at:
+          type: string
+          format: date-time
+          description: "Date when the giftcard expires. Ususally 1 years after it was bought."
+          default: "2025-10-25T11:35:20.000000Z"
+        invoice_date:
+          type: string
+          format: date-time
+          description: "Date when the invoice was created"
+          default: "2023-10-25T11:20:20.000000Z"
+        invoice_due_date:
+          type: string
+          format: date-time
+          description: "Date when the invoice is due. If not paid within this date, the reservation will be cancelled."
+          default: "2023-10-25T11:35:20.000000Z"
+        name:
+          type: string
+          description: "Name of the booker"
+          default: "John Doe"
+        email:
+          type: string
+          description: "Email of the booker"
+          default: "john@doe.no"
+        phone:
+          type: string
+          description: "Phone of the booker."
+          default: "+4712345678"
+        address1:
+          type: string
+          description: "Address of the booker"
+          nullable: true
+          default: "Slottsgata 1"
+        address2: 
+          type: string
+          description: "Address of the booker"
+          nullable: true
+          default: "Vestre inngang"
+        zip:
+          type: string
+          description: "Postal code of the booker"
+          nullable: true
+          default: "8300"
+        city:
+          type: string
+          description: "City of the booker"
+          nullable: true
+          default: "Svolvær"
+        delivery_date: 
+          type: string
+          format: date-time
+          description: "The latest date of any delivery within the order."
+          default: "2023-11-30T11:20:20.000000Z"
+        total:
+          type: integer
+          description: "Total price of the order"
+          default: 1000
+        paid_at:
+          type: string
+          format: date-time
+          description: "Date when the invoice was paid"
+          nullable: true
+          default: null
+        payment_gateway:
+          type: string
+          description: "Payment gateway used for this reservation"
+          default: "stripe"
+          enum:
+            - stripe
+            - nets
+        stripe_key:
+          type: string
+          description: "Stripe key used for this reservation. Is only present if stripe is the payment gateway."
+          nullable: true
+          default: "pk_test_1234567890"
+        stripe_client_secret:
+          type: string
+          description: "Stripe client secret used for this reservation. Is only present if stripe is the payment gateway."
+          nullable: true
+          default: "pi_1234567890_secret_gwe234234"
+        payment_id:
+          type: string
+          description: "Payment ID of the nets payment. Is only present if nets is the payment gateway."
+          nullable: true
+          default: "01234567bfe12324few1234"
+        merchant_id:
+          type: string
+          description: "Merchant ID of the nets payment. Is only present if nets is the payment gateway."
+          nullable: true
+          default: "1234567890"
+        checkout_key: 
+          type: string
+          description: "Checkout key used for this reservation. Is only present if nets is the payment gateway."
+          nullable: true
+          default: "test-checkout-key-12fbg34bm567poi890c"
+    Giftcard402Response:
+      type: object
+      default: {
+          "success": false,
+          "error": {
+              "code": 402,
+              "message": "Giftcard is not paid."
+          }
+      }
+    GiftcardStatusResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "Id/code of the giftcard"
+          default: 5bDKgD0
+        custom_code:
+          type: string
+          description: "Custom code that is set on the giftcard"
+          default: 5bDKgD0
+        expires_at:
+          type: string
+          format: date-time
+          description: "Date when the giftcard expires. Ususally 1 years after it was bought."
+          default: "2025-10-25T11:35:20.000000Z"
+        created_at:
+          type: string
+          format: date-time
+          description: "Date when the giftcard was created"
+          default: "2025-10-25T11:35:20.000000Z"
+        original_amount:
+          type: integer
+          description: "Original amount of the giftcard"
+          default: 1000
+        balance:
+          type: integer
+          description: "Remaining balance of the giftcard"
+          default: 1000
+        name:
+          type: string
+          description: "Name of the receiver"
+          default: "Jane Doe"
+        email:
+          type: string
+          description: "Email of the receiver"
+          default: "jane@doe"
+    PromoCode200Response:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: "Id of the promo code"
+          default: 1
+        name:
+          type: string
+          description: "Name of the promo code"
+          default: "Summer 2021"
+        start_date:
+          type: string
+          format: date-time
+          description: "Date when the promo code starts"
+          default: "2021-06-01T00:00:00.000000Z"
+        end_date:
+          type: string
+          format: date-time
+          description: "Date when the promo code ends"
+          default: "2021-08-31T00:00:00.000000Z"
+        coupon_code:
+          type: string
+          description: "Coupon code of the promo code"
+          default: "SUMMER2021"
+        coupon_type:
+          type: string
+          description: "Type of the promo code"
+          default: "percentage"
+          enum:
+            - percentage
+            - fixed
+        coupon_value:
+          type: integer
+          description: "Value of the promo code"
+          default: 10
+        max_orders:
+          type: integer
+          description: "Maximum number of orders that can use this promo code"
+          default: 100
+        created_at:
+          type: string
+          format: date-time
+          description: "Date when the promo code was created"
+          default: "2021-06-01T00:00:00.000000Z"
+        products: 
+          type: array
+          description: "Product Catalogs that the promo code is valid for"
+          items:
+            type: integer
+            default: 1
+        product_max_quantity:
+          type: array
+          description: "Maximum quantity of each product that the promo code is valid for. Will map to product catalog"
+          default: [
+              {
+                  "product_id": 1,
+                  "product_name": "Rib Safari",
+                  "max_quantity": 0,
+                  "max_total_quantity": 0,
+                  "used_quantity": 0,
+                  "remaining_quantity": null
+              }
+          ]
+    PromoCode404Response:
+      type: object
+      description: Either the promo code does not exist, or it is not active or is expired.
+      default: {
+        "message": "Campaign not found || The promo code is either not active or expired."
+      }
+    PromoCodesActive200Response:
+      type: object
+      properties:
+        product_ids:
+          type: array
+          description: "Product Catalogs that has active promo-codes"
+          items:
+            type: integer
+            default: 1
+        active_general_campaigns:
+          type: boolean
+          description: "Whether there are active general campaigns for all products (product catalogs)"
+          default: true
+    LeadsRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: "Name of the lead"
+          default: "Jane Doe"
+        email:
+          type: string
+          description: "Email of the lead"
+          default: "jane@doe"
+        phone:
+          type: string
+          description: "Phone number of the lead"
+          default: "12345678"
+        description:
+          type: string
+          description: "Message of the lead"
+          default: "Hello, I would like to book a trip"
+        is_group:
+          type: boolean
+          description: "Whether the lead is a group or not"
+          default: false
+        group_size:
+          type: integer
+          description: "Size of the group"
+          default: 1
+        company:
+          type: string
+          description: "Company of the lead"
+          default: "Company A"
+        start:
+          type: string
+          format: date
+          description: "Start date of the trip"
+          default: "2023-10-25"
+        end:
+          type: string
+          format: date
+          description: "End date of the trip"
+          default: "2023-10-25"
+        products:
+          type: array
+          description: "Product Catalog ids that the lead is interested in"
+          items:
+            type: integer
+            default: 1
+    LeadsResponse:
+        type: object
+        properties:
+          id:
+            type: integer
+            description: "Id of the lead"
+            default: 1
+          name:
+            type: string
+            description: "Name of the lead"
+            default: "Jane Doe"
+          email:
+            type: string
+            description: "Email of the lead"
+            default: "jane@doe"
+          phone:
+            type: string
+            description: "Phone number of the lead"
+            default: "12345678"
+          description:
+            type: string
+            description: "Message of the lead"
+            default: "Hello, I would like to book a trip"
+          is_group:
+            type: boolean
+            description: "Whether the lead is a group or not"
+            default: false
+          group_size:
+            type: integer
+            description: "Size of the group"
+            default: 1
+          company:
+            type: string
+            description: "Company of the lead"
+            default: "Company A"
+          start:
+            type: string
+            format: date
+            description: "Start date of the trip"
+            default: "2023-10-25"
+          end:
+            type: string
+            format: date
+            description: "End date of the trip"
+            default: "2023-10-25"
+          products:
+            type: array
+            description: "Product Catalog ids that the lead is interested in"
+            items:
+              type: integer
+              default: 1
+    SettingsResponse:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+          description: "Name of the Bilberry"
+          default: "Fjord Active Adventures"
+        email:
+          type: string
+          nullable: true
+          description: "Email of the Bilberry"
+          default: "post@fjordactiveadventures.no"
+        phone:
+          type: string
+          nullable: true
+          description: "Phone number of the Bilberry"
+          default: "+4712345678"
+        Address:
+          type: string
+          nullable: true
+          description: "Address of the Bilberry"
+          default: "Fjord Active Adventures, 1234, Norway"
+        zip:
+          type: string
+          nullable: true
+          description: "Zip code of the Bilberry"
+          default: "1234"
+        city:
+          type: string
+          nullable: true
+          description: "City of the Bilberry"
+          default: "Oslo"
+        logo:
+          type: string
+          nullable: true
+          description: "Logo of the Bilberry"
+          default: "https://bilberry-cdn.s3.eu-central-1.amazonaws.com/logo.png"
+        website:
+          type: string
+          nullable: true
+          description: "Website of the Bilberry"
+          default: "https://fjordactiveadventures.no"
+        gifcard_dummy_image:
+          type: string
+          nullable: true
+          description: "Dummy image of the giftcard"
+          default: "https://bilberry-cdn.s3.eu-central-1.amazonaws.com/giftcard_dummy_image.png"
+        giftcard_expires_at:
+          type: string
+          nullable: true
+          format: date-time
+          description: "If giftcard is bought today, when will it expire?"
+          default: "2024-10-27T22:59:59.999999Z"
+        payment_gateway:
+          type: string
+          description: "Payment gateway of the Bilberry"
+          default: "stripe"
+          enum:
+            - stripe
+            - nets
+        currency:
+          type: string
+          description: "Currency of the Bilberry"
+          default: "NOK"
+          enum:
+            - NOK
+            - EUR
+            - GBP
+  requestBodies:
+    Reservation:
+      description: Reservation object that needs to be sent
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ReservationRequest'
+    Leads:
+      description: Leads object that needs to be sent
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LeadsRequest'
+    Giftcard:
+      description: Giftcard object that needs to be sent
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GiftcardRequest'
+  securitySchemes:
+    regular_token:
+      type: apiKey
+      name: bearer_token
+      in: header
+      
