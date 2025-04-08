@@ -421,9 +421,9 @@ paths:
     post:
       tags:
         - Leads
-      summary: Gets all products with promo-codes active
-      description: Gets all products with promo-codes active
-      operationId: promoCodeStatus
+      summary: Store a new lead
+      description: Store a new lead
+      operationId: Lead
       requestBody:
         content: 
           application/json:
