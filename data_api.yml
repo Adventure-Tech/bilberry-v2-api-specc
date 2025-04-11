@@ -1,11 +1,15 @@
-openapi: '3.0.2'
+openapi: 3.0.2
 info:
   title: Bilberry Data API
   version: 1.0.0
-  description: |-
-    This is a private API for Bilberry. It is used to get information about products, product catalogs, orders and reservations. The API is meant to be used for collecting private data from your Bilberry Base installation. The secret token must be used on all of these endpoints, as it can be sensitive information for your business.
+  description: >-
+    This is a private API for Bilberry. It is used to get information about
+    products, product catalogs, orders and reservations. The API is meant to be
+    used for collecting private data from your Bilberry Base installation. The
+    secret token must be used on all of these endpoints, as it can be sensitive
+    information for your business.
 servers:
-  - url: https://bilberry.test/api/data
+  - url: 'https://bilberry.test/api/data'
 tags:
   - name: Orders
     description: Contains information about your orders.
@@ -29,11 +33,11 @@ tags:
     description: Contains information about your plans (implementations of your products)
   - name: Threads
     description: Contains information about your threads (communication with end customers)
-paths:  
+paths:
   /Orders:
     get:
       tags:
-        - 'Orders'
+        - Orders
       summary: Gets all orders
       description: Get all orders
       operationId: getOrders
@@ -61,7 +65,9 @@ paths:
             type: string
         - name: ids
           in: query
-          description: Comma seperated string. Will only get product-catalogss within range of id's
+          description: >-
+            Comma seperated string. Will only get product-catalogss within range
+            of id's
           required: false
           explode: true
           schema:
@@ -74,7 +80,7 @@ paths:
           schema:
             type: string
       responses:
-        200:
+        '200':
           description: Successful operation
           content:
             application/json:
@@ -82,16 +88,16 @@ paths:
                 $ref: '#/components/schemas/Orders'
       security:
         - secret_token:
-            - read:orders
+            - 'read:orders'
   /products:
     get:
       tags:
-        - 'Products'
+        - Products
       summary: Gets all products
       description: Gets all products
       operationId: getProducts
       responses:
-        200:
+        '200':
           description: Successful operation
           content:
             application/json:
@@ -99,23 +105,23 @@ paths:
                 $ref: '#/components/schemas/Products'
       security:
         - secret_token:
-            - read:products
+            - 'read:products'
   /customers:
     get:
       tags:
-        - 'Customer'
+        - Customer
       summary: Gets all customers
       description: gets all customers
       operationId: getCustomers
       parameters:
         - name: agent
           in: path
-          description: Only returns agents, if true
+          description: 'Only returns agents, if true'
           required: true
           schema:
             type: boolean
       responses:
-        200:
+        '200':
           description: Successful operation
           content:
             application/json:
@@ -123,23 +129,23 @@ paths:
                 $ref: '#/components/schemas/Customers'
       security:
         - secret_token:
-            - read:customer
-  /customers/{customerId}:
+            - 'read:customer'
+  '/customers/{customerId}':
     get:
       tags:
-        - 'Customer'
+        - Customer
       summary: Gets a single customer
-      description:  Gets a single customer
+      description: Gets a single customer
       operationId: getCustomer
       parameters:
         - name: agent
           in: path
-          description: Only returns agent, if true
+          description: 'Only returns agent, if true'
           required: true
           schema:
             type: boolean
       responses:
-        200:
+        '200':
           description: Successful operation
           content:
             application/json:
@@ -147,16 +153,16 @@ paths:
                 $ref: '#/components/schemas/Customer'
       security:
         - secret_token:
-            - read:customer
+            - 'read:customer'
   /events:
     get:
       tags:
-        - 'Event'
+        - Event
       summary: Gets all events
-      description:  Gets all events
+      description: Gets all events
       operationId: getEvent
       responses:
-        200:
+        '200':
           description: Successful operation
           content:
             application/json:
@@ -164,8 +170,8 @@ paths:
                 $ref: '#/components/schemas/Events'
       security:
         - secret_token:
-            - read:event
-  events/{eventId}:
+            - 'read:event'
+  'events/{eventId}':
     get:
       tags:
         - Event
@@ -173,13 +179,13 @@ paths:
       description: get a single event
       operationId: getEvent
       responses:
-        200:
+        '200':
           description: successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Event'
-  /events/{eventId}/plans:
+  '/events/{eventId}/plans':
     get:
       tags:
         - Event plans
@@ -187,13 +193,13 @@ paths:
       description: get all plans for an event
       operationId: getEventPlans
       responses:
-        200:
+        '200':
           description: successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Plans'
-  /events/{eventId}/notes:
+  '/events/{eventId}/notes':
     get:
       tags:
         - Event notes
@@ -201,27 +207,27 @@ paths:
       description: Get all notes for an event
       operationId: getEventNotes
       responses:
-        200:
+        '200':
           description: successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Notes'
-  /events/{eventId}/orders:
-    get:
+  '/events/{eventId}/orders':
+    get: null
     tags:
       - Event orders
     summary: Gets all event orders
     description: Gets all event orders
     operationId: getEventOrders
     responses:
-      200:
+      '200':
         description: successful operation
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Orders'
-  /events/{eventId}/tasks:
+  '/events/{eventId}/tasks':
     get:
       tags:
         - Event tasks
@@ -229,13 +235,13 @@ paths:
       description: Get all tasks for an event
       operationId: getEventTasks
       responses:
-        200:
+        '200':
           description: successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Tasks'
-  /events/{eventId}/thread:
+  '/events/{eventId}/thread':
     get:
       tags:
         - Event threads
@@ -243,7 +249,7 @@ paths:
       description: Get all threads for an event
       operationId: getEventTasks
       responses:
-        200:
+        '200':
           description: successful operation
           content:
             application/json:
@@ -257,13 +263,13 @@ paths:
       description: Get all tours
       operationId: getTours
       responses:
-        200:
+        '200':
           description: successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Tours'
-  /tours/{tourId}:
+  '/tours/{tourId}':
     get:
       tags:
         - Tour
@@ -271,187 +277,186 @@ paths:
       description: Get single tour
       operationId: getTour
       responses:
-        200:
+        '200':
           description: successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Tour'
-    /tours/{tourId}/plans:
+  '/tours/{tourId}/plans':
+    get:
+      tags:
+        - Tour plans
+      summary: Get all plans for an tour
+      description: get all plans for an tour
+      operationId: getTourPlans
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plans'
+  '/tours/{tourId}/notes':
+    get:
+      tags:
+        - Tour notes
+      summary: Get all notes for an tour
+      description: Get all notes for an tour
+      operationId: getTourNotes
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notes'
+  '/tours/{tourId}/orders':
+    get:
+      tags:
+        - Tour orders
+      summary: Gets all tour orders
+      description: Gets all tour orders
+      operationId: getTourOrders
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Orders'
+  '/tours/{tourId}/tasks':
+    get:
+      tags:
+        - Tour tasks
+      summary: Get all tasks for an tour
+      description: Get all tasks for an tour
+      operationId: getTourTasks
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+  '/tours/{tourId}/thread':
+    get:
+      tags:
+        - Tour threads
+      summary: Get all threads for a tour
+      description: Get all threads for a tour
+      operationId: getTourTasks
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Thread'
+    /users:
       get:
         tags:
-          - Tour plans
-        summary: Get all plans for an tour
-        description: get all plans for an tour
-        operationId: getTourPlans
+          - Users
+        summary: Get all users
+        description: Get all users
+        operationId: getUsersTask
         responses:
-          200:
+          '200':
             description: successful operation
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/Plans'
-    /tours/{tourId}/notes:
-      get:
-        tags:
-          - Tour notes
-        summary: Get all notes for an tour
-        description: Get all notes for an tour
-        operationId: getTourNotes
-        responses:
-          200:
-            description: successful operation
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Notes'
-      /tours/{tourId}/orders:
-      get:
-        tags:
-          - Tour orders
-        summary: Gets all tour orders
-        description: Gets all tour orders
-        operationId: getTourOrders
-        responses:
-          200:
-            description: successful operation
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Orders'
-    /tours/{tourId}/tasks:
-      get:
-        tags:
-          - Tour tasks
-        summary: Get all tasks for an tour
-        description: Get all tasks for an tour
-        operationId: getTourTasks
-        responses:
-          200:
-            description: successful operation
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Task'
-    /tours/{tourId}/thread:
-      get:
-        tags:
-          - Tour threads
-        summary: Get all threads for a tour
-        description: Get all threads for a tour
-        operationId: getTourTasks
-        responses:
-          200:
-            description: successful operation
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Thread'
-      /users:
+                  $ref: '#/components/schemas/Users'
+      '/users/{userId}':
         get:
           tags:
-            - Users
-          summary: Get all users
-          description: Get all users
-          operationId: getUsersTask
+            - User
+          summary: Get a user
+          description: Get a user
+          operationId: getUserTask
           responses:
-            200:
+            '200':
               description: successful operation
               content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/Users'
-        /users/{userId}:
+                    $ref: '#/components/schemas/User'
+        /tasks:
           get:
             tags:
-              - User
-            summary: Get a user
-            description: Get a user
-            operationId: getUserTask
+              - Task
+            summary: Get all tasks
+            description: Get all tasks
+            operationId: getTasksTask
             responses:
-              200:
+              '200':
                 description: successful operation
                 content:
                   application/json:
                     schema:
-                      $ref: '#/components/schemas/User'
-          /tasks:
-            get:
-              tags:
-                - Task
-              summary: Get all tasks
-              description: Get all tasks
-              operationId: getTasksTask
-              responses:
-                200:
-                  description: successful operation
-                  content:
-                    application/json:
-                      schema:
-                        $ref: '#/components/schemas/Tasks'
-          /leads:
-            get:
-              tags:
-                - Lead
-              summary: Get all leads
-              description: Get all leads
-              operationId: getLeadTask
-              responses:
-                200:
-                  description: successful operation
-                  content:
-                    application/json:
-                      schema:
-                        $ref: '#/components/schemas/Leads'
-          /notes:
-            get:
-              tags:
-                - Note
-              summary: Get all notes
-              description: Get all notes
-              operationId: getNotesTask
-              responses:
-                200:
-                  description: successful operation
-                  content:
-                    application/json:
-                      schema:
-                        $ref: '#/components/schemas/Notes'
-          /plans:
-            get:
-              tags:
-                - Plan
-              summary: Get all plans
-              description: Get all plans
-              operationId: getPlansTask
-              responses:
-                200:
-                  description: successful operation
-                  content:
-                    application/json:
-                      schema:
-                        $ref: '#/components/schemas/Plans'
-          /threads:
-            get:
-              tags:
-                - Thread
-              summary: Get all threads
-              description: Get all threads
-              operationId: getThreadsTask
-              responses:
-                200:
-                  description: successful operation
-                  content:
-                    application/json:
-                      schema:
-                        $ref: '#/components/schemas/Threads'
-
+                      $ref: '#/components/schemas/Tasks'
+        /leads:
+          get:
+            tags:
+              - Lead
+            summary: Get all leads
+            description: Get all leads
+            operationId: getLeadTask
+            responses:
+              '200':
+                description: successful operation
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/Leads'
+        /notes:
+          get:
+            tags:
+              - Note
+            summary: Get all notes
+            description: Get all notes
+            operationId: getNotesTask
+            responses:
+              '200':
+                description: successful operation
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/Notes'
+        /plans:
+          get:
+            tags:
+              - Plan
+            summary: Get all plans
+            description: Get all plans
+            operationId: getPlansTask
+            responses:
+              '200':
+                description: successful operation
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/Plans'
+        /threads:
+          get:
+            tags:
+              - Thread
+            summary: Get all threads
+            description: Get all threads
+            operationId: getThreadsTask
+            responses:
+              '200':
+                description: successful operation
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/Threads'
 components:
   schemas:
     Products:
-        type: array
-        items:
-            $ref: '#/components/schemas/Product'
+      type: array
+      items:
+        $ref: '#/components/schemas/Product'
     Product:
       type: object
       properties:
@@ -461,31 +466,43 @@ components:
           default: 10
         name:
           type: string
-          default: "Internal name: For example Rib safari"
+          default: 'Internal name: For example Rib safari'
         description:
           type: string
-          default: "Internal description: For example A rib safari"
+          default: 'Internal description: For example A rib safari'
         web_name:
           type: string
-          default: "Gets translated name, meant for external use: For example Rib Safari to Trollfjorden"
+          default: >-
+            Gets translated name, meant for external use: For example Rib Safari
+            to Trollfjorden
         web_url:
           type: string
-          default: "Gets translated url to which page on your website it is meant to be used."
+          default: >-
+            Gets translated url to which page on your website it is meant to be
+            used.
         web_short_description:
           type: string
-          default: "Gets translated short description, meant for external use. Will be HTML"
+          default: >-
+            Gets translated short description, meant for external use. Will be
+            HTML
         web_full_descrition:
           type: string
-          default: "Gets translated full description, meant for external use. Will be HTML."
+          default: >-
+            Gets translated full description, meant for external use. Will be
+            HTML.
         web_additional_info:
           type: string
-          default: "Gets translated additional info, meant for external use. Will be HTML."
+          default: >-
+            Gets translated additional info, meant for external use. Will be
+            HTML.
         web_times:
           type: string
-          default: "Gets departure times. Manually entered string."
+          default: Gets departure times. Manually entered string.
         web_disclaimer:
           type: string
-          default: "Gets translated additional info, meant for external use. Will be HTML."
+          default: >-
+            Gets translated additional info, meant for external use. Will be
+            HTML.
         is_accommodation:
           type: boolean
           default: 0
@@ -494,7 +511,7 @@ components:
           default: 0
         difficulty:
           type: string
-          default: 'easy'
+          default: easy
           enum:
             - easy
             - medium
@@ -510,77 +527,62 @@ components:
           default: 12
         default_prices:
           type: array
-          default: [
-            {
-              "id": 1,
-              "price_category_id": 1,
-              "name": "Adult",
-              "price_type": "Adult",
-              "price": 1000,
-              "retail_price": 1000,
-              "commission": null,
-              "vat_amount": 99.13,
-              "occupancy": 1,
-              "age_from": null,
-              "age_to": null,
-              "rates": [
-                {
-                  "name": "Food",
-                  "price": 300,
-                  "retail_price": 300,
-                  "vat": 15,
-                  "vat_id": 2,
-                  "vat_amount": 39.13,
-                  "retail_vat_amount": 39.13
-                },
-                {
-                  "name": "Guide",
-                  "price": 400,
-                  "retail_price": 400,
-                  "vat": 0,
-                  "vat_id": 5,
-                  "vat_amount": 0,
-                  "retail_vat_amount": 0
-                },
-                {
-                  "name": "Tour",
-                  "price": 300,
-                  "retail_price": 300,
-                  "vat": 25,
-                  "vat_id": 1,
-                  "vat_amount": 60,
-                  "retail_vat_amount": 60
-                }
-              ]
-            },
-            {
-              "id": 2,
-              "price_category_id": 2,
-              "name": "Child",
-              "price_type": "Child",
-              "price": 700,
-              "retail_price": 700,
-              "commission": null,
-              "vat_amount": 140,
-              "occupancy": 1,
-              "age_from": 0,
-              "age_to": 10,
-              "rates": [
-                {
-                  "name": "Child",
-                  "price": 700,
-                  "retail_price": 700,
-                  "vat": 25,
-                  "vat_id": 1,
-                  "vat_amount": 140,
-                  "retail_vat_amount": 140
-                }
-              ]
-            }
-          ]
+          default:
+            - id: 1
+              price_category_id: 1
+              name: Adult
+              price_type: Adult
+              price: 1000
+              retail_price: 1000
+              commission: null
+              vat_amount: 99.13
+              occupancy: 1
+              age_from: null
+              age_to: null
+              rates:
+                - name: Food
+                  price: 300
+                  retail_price: 300
+                  vat: 15
+                  vat_id: 2
+                  vat_amount: 39.13
+                  retail_vat_amount: 39.13
+                - name: Guide
+                  price: 400
+                  retail_price: 400
+                  vat: 0
+                  vat_id: 5
+                  vat_amount: 0
+                  retail_vat_amount: 0
+                - name: Tour
+                  price: 300
+                  retail_price: 300
+                  vat: 25
+                  vat_id: 1
+                  vat_amount: 60
+                  retail_vat_amount: 60
+            - id: 2
+              price_category_id: 2
+              name: Child
+              price_type: Child
+              price: 700
+              retail_price: 700
+              commission: null
+              vat_amount: 140
+              occupancy: 1
+              age_from: 0
+              age_to: 10
+              rates:
+                - name: Child
+                  price: 700
+                  retail_price: 700
+                  vat: 25
+                  vat_id: 1
+                  vat_amount: 140
+                  retail_vat_amount: 140
         meet_up_address:
           type: integer
-          default: "Entrance to the pier"
+          default: Entrance to the pier
         location:
           type: object
           $ref: '#/components/schemas/Location'
@@ -595,124 +597,124 @@ components:
             - EUR
             - GBP
     Tours:
-        type: array
-        items:
-            $ref: '#/components/schemas/Tour'
+      type: array
+      items:
+        $ref: '#/components/schemas/Tour'
     Tour:
-        type: object
-        properties:
-          id:
-            type: integer
-            format: int64
-            default: 10
-          name:
-            type: string
-            default: "Tour name"
-          start:
-            type: string
-            format: date-time
-            default: "2023-10-25 11:20"
-          end:
-            type: string
-            format: date-time
-            default: "2023-10-25 11:20"
-          offer_at:
-            type: string
-            format: date-time
-            default: "2023-10-25 11:20"
-          confirmed_at:
-            type: string
-            format: date-time
-            default: "2023-10-25 11:20"
-          created_at:
-            type: string
-            format: date-time
-            default: "2023-10-25 11:20"
-          updated_at:
-            type: string
-            format: date-time
-            default: "2023-10-25 11:20"
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          default: 10
+        name:
+          type: string
+          default: Tour name
+        start:
+          type: string
+          format: date-time
+          default: '2023-10-25 11:20'
+        end:
+          type: string
+          format: date-time
+          default: '2023-10-25 11:20'
+        offer_at:
+          type: string
+          format: date-time
+          default: '2023-10-25 11:20'
+        confirmed_at:
+          type: string
+          format: date-time
+          default: '2023-10-25 11:20'
+        created_at:
+          type: string
+          format: date-time
+          default: '2023-10-25 11:20'
+        updated_at:
+          type: string
+          format: date-time
+          default: '2023-10-25 11:20'
     Events:
-        type: array
-        items:
-            $ref: '#/components/schemas/Event'
+      type: array
+      items:
+        $ref: '#/components/schemas/Event'
     Event:
-        type: object
-        properties:
-          id:
-            type: integer
-            format: int64
-            default: 10
-          name:
-            type: string
-            default: "Event name"
-          start:
-            type: string
-            format: date-time
-            default: "2023-10-25 11:20"
-          end:
-            type: string
-            format: date-time
-            default: "2023-10-25 11:20"
-          offer_at:
-            type: string
-            format: date-time
-            default: "2023-10-25 11:20"
-          offer_by_id:
-            type: integer
-            format: int64
-            default: 10
-          external_ref:
-            type: string
-            default: "External reference"
-          confirmed_at:
-            type: string
-            format: date-time
-            default: "2023-10-25 11:20"
-          project_confirmed_at:
-            type: string
-            format: date-time
-            default: "2023-10-25 11:20"
-          project_manager_id:
-            type: integer
-            format: int64
-            default: 10
-          itinerary_description:
-            type: string
-            default: "Itinerary description"
-          itinerary_product_id:
-            type: integer
-            format: int64
-            default: 10
-          guide_notes:
-            type: string
-            default: "Guide notes"
-          draft:
-            type: boolean
-            default: false
-          archived_at:
-            type: string
-            format: date-time
-            default: "2023-10-25 11:20"
-          customer:
-            type: object
-            items:
-              $ref: '#/components/schemas/Customer'
-          pocs:
-            type: array
-            description: contains user ids
-          created_at:
-            type: string
-            format: date-time
-            default: "2023-10-25 11:20"
-          updated_at:
-            type: string
-            format: date-time
-            default: "2023-10-25 11:20"
-    Customers:
-        type: array
-        items:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          default: 10
+        name:
+          type: string
+          default: Event name
+        start:
+          type: string
+          format: date-time
+          default: '2023-10-25 11:20'
+        end:
+          type: string
+          format: date-time
+          default: '2023-10-25 11:20'
+        offer_at:
+          type: string
+          format: date-time
+          default: '2023-10-25 11:20'
+        offer_by_id:
+          type: integer
+          format: int64
+          default: 10
+        external_ref:
+          type: string
+          default: External reference
+        confirmed_at:
+          type: string
+          format: date-time
+          default: '2023-10-25 11:20'
+        project_confirmed_at:
+          type: string
+          format: date-time
+          default: '2023-10-25 11:20'
+        project_manager_id:
+          type: integer
+          format: int64
+          default: 10
+        itinerary_description:
+          type: string
+          default: Itinerary description
+        itinerary_product_id:
+          type: integer
+          format: int64
+          default: 10
+        guide_notes:
+          type: string
+          default: Guide notes
+        draft:
+          type: boolean
+          default: false
+        archived_at:
+          type: string
+          format: date-time
+          default: '2023-10-25 11:20'
+        customer:
+          type: object
+          items:
             $ref: '#/components/schemas/Customer'
+        pocs:
+          type: array
+          description: contains user ids
+        created_at:
+          type: string
+          format: date-time
+          default: '2023-10-25 11:20'
+        updated_at:
+          type: string
+          format: date-time
+          default: '2023-10-25 11:20'
+    Customers:
+      type: array
+      items:
+        $ref: '#/components/schemas/Customer'
     Customer:
       type: object
       properties:
@@ -722,39 +724,39 @@ components:
           default: 10
         name:
           type: string
-          default: "Customer name"
+          default: Customer name
         agent:
           type: boolean
           default: false
         vat_number:
           type: string
-          default: "NO123456789"
+          default: NO123456789
         address1:
           type: string
-          default: "Slottsgata 1"
+          default: Slottsgata 1
         address2:
           type: string
-          default: "Vestre inngang"
+          default: Vestre inngang
         zip:
           type: string
-          default: "8300"
+          default: '8300'
         city:
           type: string
-          default: "Svolvær"
+          default: Svolvær
         country:
           type: string
-          default: "Norway"
+          default: Norway
         phone:
           type: string
-          default: "+4712345678"
+          default: '+4712345678'
         created_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         updated_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         notes:
           type: array
           items:
@@ -784,20 +786,20 @@ components:
           default: 10
         name:
           type: string
-          default: "Task name"
+          default: Task name
         urgent:
           type: boolean
           default: false
         completed_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         type:
           type: string
-          default: "Task"
+          default: Task
         url:
           type: string
-          default: "https://bilberry.no/task"
+          default: 'https://bilberry.no/task'
     Thread:
       type: object
       properties:
@@ -807,7 +809,7 @@ components:
           default: 10
         model_type:
           type: string
-          default: "Thread"
+          default: Thread
         model_id:
           type: integer
           format: int64
@@ -818,87 +820,87 @@ components:
           default: 10
         subject:
           type: string
-          default: "Thread subject"
+          default: Thread subject
         archived_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         created_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         updated_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         deleted_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         budget_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         program_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         itinerary_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         confirmed_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         opened_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         supplier_program_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         itinerary_program_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         confirmation_page_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         email_url:
           type: string
-          default: "https://bilberry.no/confirmation"
+          default: 'https://bilberry.no/confirmation'
         itinerary_url:
           type: string
-          default: "https://bilberry.no/itinerary"
+          default: 'https://bilberry.no/itinerary'
         itinerary_template_url:
           type: string
-          default: "https://bilberry.no/itinerary_template"
+          default: 'https://bilberry.no/itinerary_template'
         itinerary_program_url:
           type: string
-          default: "https://bilberry.no/itinerary_program"
+          default: 'https://bilberry.no/itinerary_program'
         program_url:
           type: string
-          default: "https://bilberry.no/program"
+          default: 'https://bilberry.no/program'
         guide_url:
           type: string
-          default: "https://bilberry.no/guide"
+          default: 'https://bilberry.no/guide'
         hashid:
           type: string
-          default: "1234567890"
+          default: '1234567890'
         type:
           type: string
-          default: "Forespørsel"
+          default: Forespørsel
         replies:
-            type: array
+          type: array
         model:
           type: array
     Threads:
-        type: array
-        items:
-            $ref: '#/components/schemas/Thread'
+      type: array
+      items:
+        $ref: '#/components/schemas/Thread'
     Plans:
       type: array
       items:
@@ -912,18 +914,18 @@ components:
           default: 10
         name:
           type: string
-          default: "Internal name: For example Rib safari"
+          default: 'Internal name: For example Rib safari'
         description:
           type: string
-          default: "Internal description: For example A rib safari"
+          default: 'Internal description: For example A rib safari'
         start:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         end:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         need_staff:
           type: boolean
           default: false
@@ -932,7 +934,9 @@ components:
           default: false
         cutoff_time:
           type: integer
-          description: The number of minutes before start date a booking can be booked. Can be negative.
+          description: >-
+            The number of minutes before start date a booking can be booked. Can
+            be negative.
           default: 1440
         cancellation_time:
           type: integer
@@ -960,22 +964,22 @@ components:
           default: 10
         meet_up_address:
           type: string
-          default: "Entrance to the pier"
+          default: Entrance to the pier
         created_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         updated_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         deleted_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         notes:
           type: string
-          default: "Internal notes"
+          default: Internal notes
         featured:
           type: boolean
           default: false
@@ -987,19 +991,19 @@ components:
           default: false
         full_description:
           type: string
-          default: "Internal full description"
+          default: Internal full description
         itinerary_only:
           type: boolean
           default: false
         offer_intinerary_description:
           type: string
-          default: "Internal offer intinerary description"
+          default: Internal offer intinerary description
         offer_short_description:
           type: string
-          default: "Internal offer short description"
+          default: Internal offer short description
         offer_full_description:
           type: string
-          default: "Internal offer full description"
+          default: Internal offer full description
         total_price:
           type: integer
           default: 1000
@@ -1030,12 +1034,12 @@ components:
               default: 10
             name:
               type: string
-              default: "Internal name: For example Rib safari"
+              default: 'Internal name: For example Rib safari'
             description:
               type: string
-              default: "Internal description: For example A rib safari"
+              default: 'Internal description: For example A rib safari'
     Notes:
-      type: array 
+      type: array
       items:
         $ref: '#/components/schemas/Note'
     Note:
@@ -1047,7 +1051,7 @@ components:
           default: 10
         content:
           type: string
-          default: "A note"
+          default: A note
         author_id:
           type: integer
           format: int64
@@ -1055,10 +1059,10 @@ components:
         created_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         type:
           type: string
-          default: "Note"
+          default: Note
         author:
           type: object
           items:
@@ -1066,88 +1070,82 @@ components:
     Orders:
       type: array
       properties:
-          id:
-            type: integer
-            format: int64
-            default: 10
-          name:
-            type: string
-            default: "John Doe"
-          email:
-            type: string
-            default: "john@doe.no"
-          phone:
-            type: string
-            default: "+4712345678"
-          arrived:
-            type: boolean
-            default: false
-          arrived_at:
-            type: string
-            format: date-time
-            nullable: true
-            default: null
-          invoice_id:
-            type: integer
-            format: int64
-            default: 10
-          paid_at:
-            type: string
-            format: date-time
-            nullable: true
-            default: null
-          booker_name:
-            type: string
-            default: "John Doe"
-          booker_email:
-            type: string
-            default: "john@doe.no"
-          booker_phone:
-            type: string
-            default: "+4712345678"
-          invoice_date:
-            type: string
-            format: date-time
-            default: "2023-10-25 11:20"
-          invoice_due_date:
-            type: string
-            format: date-time
-            default: "2023-10-25 11:20"
-          payment_method_id:
-            type: integer
-            format: int64
-            default: 10
-          payment_method:
-            type: string
-            default: "online"
-          "max_delivery_date":
-            type: string
-            format: date-time
-            default: "2023-10-25 11:20"
-          items:
-            type: array
-            default: [
-              {
-                "id": 1,
-                "name": "Rib safari - Adult",
-                "quantity": 1,
-                "pax": 1,
-                "discount": 10,
-                "order_id": 10,
-                "plan_id": 8,
-                "delivery_date": "2023-10-25 11:20",
-                "prices": [
-                  {
-                    "id": 1,
-                    "price": 1000,
-                    "vat": 25,
-                    "order_data_id": 2,
-                  }
-                ]
-              }
-            ]
+        id:
+          type: integer
+          format: int64
+          default: 10
+        name:
+          type: string
+          default: John Doe
+        email:
+          type: string
+          default: john@doe.no
+        phone:
+          type: string
+          default: '+4712345678'
+        arrived:
+          type: boolean
+          default: false
+        arrived_at:
+          type: string
+          format: date-time
+          nullable: true
+          default: null
+        invoice_id:
+          type: integer
+          format: int64
+          default: 10
+        paid_at:
+          type: string
+          format: date-time
+          nullable: true
+          default: null
+        booker_name:
+          type: string
+          default: John Doe
+        booker_email:
+          type: string
+          default: john@doe.no
+        booker_phone:
+          type: string
+          default: '+4712345678'
+        invoice_date:
+          type: string
+          format: date-time
+          default: '2023-10-25 11:20'
+        invoice_due_date:
+          type: string
+          format: date-time
+          default: '2023-10-25 11:20'
+        payment_method_id:
+          type: integer
+          format: int64
+          default: 10
+        payment_method:
+          type: string
+          default: online
+        max_delivery_date:
+          type: string
+          format: date-time
+          default: '2023-10-25 11:20'
+        items:
+          type: array
+          default:
+            - id: 1
+              name: Rib safari - Adult
+              quantity: 1
+              pax: 1
+              discount: 10
+              order_id: 10
+              plan_id: 8
+              delivery_date: '2023-10-25 11:20'
+              prices:
+                - id: 1
+                  price: 1000
+                  vat: 25
+                  order_data_id: 2
     Users:
-      type: array 
+      type: array
       items:
         $ref: '#/components/schemas/User'
     User:
@@ -1159,31 +1157,29 @@ components:
           default: 10
         first_name:
           type: string
-          default: "John"
+          default: John
         last_name:
           type: string
-          default: "Doe"
+          default: Doe
         email:
           type: string
           default: john.doe@bilberry.no
         phone:
           type: string
-          default: "+4712345678"
+          default: '+4712345678'
         created_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         updated_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         roles:
           type: array
           items:
             default:
-              [
-                "customer"
-              ]
+              - customer
     Leads:
       type: array
       items:
@@ -1197,19 +1193,19 @@ components:
           default: 10
         company:
           type: string
-          default: "Bilberry"
+          default: Bilberry
         name:
           type: string
-          default: "John Doe"
+          default: John Doe
         description:
           type: string
-          default: "A lead"
+          default: A lead
         email:
           type: string
-          default: "john.doe@bilberry.no"
+          default: john.doe@bilberry.no
         phone:
           type: string
-          default: "+4712345678"
+          default: '+4712345678'
         is_group:
           type: boolean
           default: false
@@ -1219,11 +1215,11 @@ components:
         archived_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         owned_at:
           type: string
           format: date-time
-          default: "2023-10-25 11:20"
+          default: '2023-10-25 11:20'
         owned_by:
           type: object
           items:
@@ -1237,7 +1233,7 @@ components:
           items:
             name:
               type: string
-              default: "Category name"
+              default: Category name
         notes:
           type: array
     Location:
@@ -1245,83 +1241,78 @@ components:
       properties:
         city:
           type: string
-          default: "Svolvær"
+          default: Svolvær
         address:
           type: string
-          default: "Torggata 1"
+          default: Torggata 1
         destination:
           type: object
           properties:
             name:
               type: string
-              default: "Lofoten"
+              default: Lofoten
             region:
               type: string
-              default: "Northern Norway"
+              default: Northern Norway
         geometry:
           type: object
           properties:
             type:
               type: string
-              default: "Point"
+              default: Point
             coordinates:
               type: array
-              default: [
-                14.4138412,
-                68.386917
-              ]
+              default:
+                - 14.4138412
+                - 68.386917
         media:
           type: object
           properties:
             image:
               type: object
-              default: {
-                "url": "https://bilberry.no/images/10/lofoten.jpg"
-              }
+              default:
+                url: 'https://bilberry.no/images/10/lofoten.jpg'
             gallery:
               type: array
-              default: [
-                {
-                  "url": "https://bilberry.no/images/11/svolvar.jpg"
-                }
-              ]
+              default:
+                - url: 'https://bilberry.no/images/11/svolvar.jpg'
     EventRequest:
       type: object
       properties:
         name:
           type: string
-          description: "Name of the event"
-          default: "Event name"
+          description: Name of the event
+          default: Event name
           required: true
         description:
           type: string
-          description: "Description of the event"
-          default: "Event description"
+          description: Description of the event
+          default: Event description
         lead_id:
           type: integer
-          description: "Id of the lead"
+          description: Id of the lead
           default: 1
           required: false
         customer_id:
           type: integer
-          description: "Id of the customer"
+          description: Id of the customer
           default: 1
           required: false
         start:
           type: string
           format: date-time
-          description: "Start date of the event"
-          default: "2023-10-25 11:20"
+          description: Start date of the event
+          default: '2023-10-25 11:20'
           required: true
         end:
           type: string
           format: date-time
-          description: "End date of the event"
-          default: "2023-10-25 11:20"
+          description: End date of the event
+          default: '2023-10-25 11:20'
           required: true
         group_size:
           type: integer
-          description: "Size of the group"
+          description: Size of the group
           default: 1
           required: true
   requestBodies:
@@ -1336,4 +1327,3 @@ components:
       type: apiKey
       name: bearer_token
       in: header
-      
