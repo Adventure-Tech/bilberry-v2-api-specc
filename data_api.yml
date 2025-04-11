@@ -3,82 +3,77 @@ info:
   title: Bilberry Data API
   version: 1.0.0
   description: >-
-    This is a private API for Bilberry. It is used to get information about
-    products, product catalogs, orders and reservations. The API is meant to be
-    used for collecting private data from your Bilberry Base installation. The
-    secret token must be used on all of these endpoints, as it can be sensitive
-    information for your business.
+    This is a private API for Bilberry. It is used to get information about products, product catalogs, orders and reservations. The API is meant to be used for collecting private data from your Bilberry Base installation. The secret token must be used on all of these endpoints, as it can be sensitive information for your business.
 servers:
-  - url: 'https://bilberry.test/api/data'
+- url: 'https://bilberry.test/api/data'
 tags:
-  - name: Orders
-    description: Contains information about your orders.
-  - name: Products
-    description: Contains information about your products.
-  - name: Customers
-    description: Gets information about your customers.
-  - name: Events
-    description: Contains information about your private events
-  - name: Tours
-    description: Contains information about your tours
-  - name: Users
-    description: Contains information about your users
-  - name: leads
-    description: Contains information about your leads
-  - name: Tasks
-    description: Contains information about your tasks
-  - name: Notes
-    description: Contains information about your notes
-  - name: Plans
-    description: Contains information about your plans (implementations of your products)
-  - name: Threads
-    description: Contains information about your threads (communication with end customers)
+- name: Orders
+  description: Contains information about your orders.
+- name: Products
+  description: Contains information about your products.
+- name: Customers
+  description: Gets information about your customers.
+- name: Events
+  description: Contains information about your private events
+- name: Tours
+  description: Contains information about your tours
+- name: Users
+  description: Contains information about your users
+- name: leads
+  description: Contains information about your leads
+- name: Tasks
+  description: Contains information about your tasks
+- name: Notes
+  description: Contains information about your notes
+- name: Plans
+  description: Contains information about your plans (implementations of your products)
+- name: Threads
+  description: Contains information about your threads (communication with end customers)
 paths:
   /Orders:
     get:
       tags:
-        - Orders
+      - Orders
       summary: Gets all orders
       description: Get all orders
       operationId: getOrders
       parameters:
-        - name: start
-          in: query
-          description: get all orders created on and after start date
-          required: false
-          explode: true
-          schema:
-            type: string
-        - name: end
-          in: query
-          description: get all orders created on and before end date
-          required: false
-          explode: true
-          schema:
-            type: string
-        - name: updated_at_gt
-          in: query
-          description: get all orders updated after date
-          required: false
-          explode: true
-          schema:
-            type: string
-        - name: ids
-          in: query
-          description: >-
-            Comma seperated string. Will only get product-catalogss within range
-            of id's
-          required: false
-          explode: true
-          schema:
-            type: string
-        - name: hash
-          in: query
-          description: get all orders with this hash
-          required: false
-          explode: true
-          schema:
-            type: string
+      - name: start
+        in: query
+        description: get all orders created on and after start date
+        required: false
+        explode: true
+        schema:
+          type: string
+      - name: end
+        in: query
+        description: get all orders created on and before end date
+        required: false
+        explode: true
+        schema:
+          type: string
+      - name: updated_at_gt
+        in: query
+        description: get all orders updated after date
+        required: false
+        explode: true
+        schema:
+          type: string
+      - name: ids
+        in: query
+        description: >-
+          Comma seperated string. Will only get product-catalogss within range of id's
+        required: false
+        explode: true
+        schema:
+          type: string
+      - name: hash
+        in: query
+        description: get all orders with this hash
+        required: false
+        explode: true
+        schema:
+          type: string
       responses:
         '200':
           description: Successful operation
@@ -87,12 +82,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Orders'
       security:
-        - secret_token:
-            - 'read:orders'
+      - secret_token:
+        - 'read:orders'
   /products:
     get:
       tags:
-        - Products
+      - Products
       summary: Gets all products
       description: Gets all products
       operationId: getProducts
@@ -104,22 +99,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/Products'
       security:
-        - secret_token:
-            - 'read:products'
+      - secret_token:
+        - 'read:products'
   /customers:
     get:
       tags:
-        - Customer
+      - Customer
       summary: Gets all customers
       description: gets all customers
       operationId: getCustomers
       parameters:
-        - name: agent
-          in: path
-          description: 'Only returns agents, if true'
-          required: true
-          schema:
-            type: boolean
+      - name: agent
+        in: path
+        description: 'Only returns agents, if true'
+        required: true
+        schema:
+          type: boolean
       responses:
         '200':
           description: Successful operation
@@ -128,22 +123,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/Customers'
       security:
-        - secret_token:
-            - 'read:customer'
+      - secret_token:
+        - 'read:customer'
   '/customers/{customerId}':
     get:
       tags:
-        - Customer
+      - Customer
       summary: Gets a single customer
       description: Gets a single customer
       operationId: getCustomer
       parameters:
-        - name: agent
-          in: path
-          description: 'Only returns agent, if true'
-          required: true
-          schema:
-            type: boolean
+      - name: agent
+        in: path
+        description: 'Only returns agent, if true'
+        required: true
+        schema:
+          type: boolean
       responses:
         '200':
           description: Successful operation
@@ -152,12 +147,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Customer'
       security:
-        - secret_token:
-            - 'read:customer'
+      - secret_token:
+        - 'read:customer'
   /events:
     get:
       tags:
-        - Event
+      - Event
       summary: Gets all events
       description: Gets all events
       operationId: getEvent
@@ -169,12 +164,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Events'
       security:
-        - secret_token:
-            - 'read:event'
+      - secret_token:
+        - 'read:event'
   'events/{eventId}':
     get:
       tags:
-        - Event
+      - Event
       summary: Get a single event
       description: get a single event
       operationId: getEvent
@@ -188,7 +183,7 @@ paths:
   '/events/{eventId}/plans':
     get:
       tags:
-        - Event plans
+      - Event plans
       summary: Get all plans for an event
       description: get all plans for an event
       operationId: getEventPlans
@@ -202,7 +197,7 @@ paths:
   '/events/{eventId}/notes':
     get:
       tags:
-        - Event notes
+      - Event notes
       summary: Get all notes for an event
       description: Get all notes for an event
       operationId: getEventNotes
@@ -216,7 +211,7 @@ paths:
   '/events/{eventId}/orders':
     get: null
     tags:
-      - Event orders
+    - Event orders
     summary: Gets all event orders
     description: Gets all event orders
     operationId: getEventOrders
@@ -230,7 +225,7 @@ paths:
   '/events/{eventId}/tasks':
     get:
       tags:
-        - Event tasks
+      - Event tasks
       summary: Get all tasks for an event
       description: Get all tasks for an event
       operationId: getEventTasks
@@ -244,7 +239,7 @@ paths:
   '/events/{eventId}/thread':
     get:
       tags:
-        - Event threads
+      - Event threads
       summary: Get all threads for an event
       description: Get all threads for an event
       operationId: getEventTasks
@@ -258,7 +253,7 @@ paths:
   /tours:
     get:
       tags:
-        - Tour
+      - Tour
       summary: Get all tours
       description: Get all tours
       operationId: getTours
@@ -272,7 +267,7 @@ paths:
   '/tours/{tourId}':
     get:
       tags:
-        - Tour
+      - Tour
       summary: Get single tour
       description: Get single tour
       operationId: getTour
@@ -286,7 +281,7 @@ paths:
   '/tours/{tourId}/plans':
     get:
       tags:
-        - Tour plans
+      - Tour plans
       summary: Get all plans for an tour
       description: get all plans for an tour
       operationId: getTourPlans
@@ -300,7 +295,7 @@ paths:
   '/tours/{tourId}/notes':
     get:
       tags:
-        - Tour notes
+      - Tour notes
       summary: Get all notes for an tour
       description: Get all notes for an tour
       operationId: getTourNotes
@@ -314,7 +309,7 @@ paths:
   '/tours/{tourId}/orders':
     get:
       tags:
-        - Tour orders
+      - Tour orders
       summary: Gets all tour orders
       description: Gets all tour orders
       operationId: getTourOrders
@@ -328,7 +323,7 @@ paths:
   '/tours/{tourId}/tasks':
     get:
       tags:
-        - Tour tasks
+      - Tour tasks
       summary: Get all tasks for an tour
       description: Get all tasks for an tour
       operationId: getTourTasks
@@ -342,7 +337,7 @@ paths:
   '/tours/{tourId}/thread':
     get:
       tags:
-        - Tour threads
+      - Tour threads
       summary: Get all threads for a tour
       description: Get all threads for a tour
       operationId: getTourTasks
@@ -356,7 +351,7 @@ paths:
     /users:
       get:
         tags:
-          - Users
+        - Users
         summary: Get all users
         description: Get all users
         operationId: getUsersTask
@@ -370,7 +365,7 @@ paths:
       '/users/{userId}':
         get:
           tags:
-            - User
+          - User
           summary: Get a user
           description: Get a user
           operationId: getUserTask
@@ -384,7 +379,7 @@ paths:
         /tasks:
           get:
             tags:
-              - Task
+            - Task
             summary: Get all tasks
             description: Get all tasks
             operationId: getTasksTask
@@ -398,7 +393,7 @@ paths:
         /leads:
           get:
             tags:
-              - Lead
+            - Lead
             summary: Get all leads
             description: Get all leads
             operationId: getLeadTask
@@ -412,7 +407,7 @@ paths:
         /notes:
           get:
             tags:
-              - Note
+            - Note
             summary: Get all notes
             description: Get all notes
             operationId: getNotesTask
@@ -426,7 +421,7 @@ paths:
         /plans:
           get:
             tags:
-              - Plan
+            - Plan
             summary: Get all plans
             description: Get all plans
             operationId: getPlansTask
@@ -440,7 +435,7 @@ paths:
         /threads:
           get:
             tags:
-              - Thread
+            - Thread
             summary: Get all threads
             description: Get all threads
             operationId: getThreadsTask
@@ -473,36 +468,30 @@ components:
         web_name:
           type: string
           default: >-
-            Gets translated name, meant for external use: For example Rib Safari
-            to Trollfjorden
+            Gets translated name, meant for external use: For example Rib Safari to Trollfjorden
         web_url:
           type: string
           default: >-
-            Gets translated url to which page on your website it is meant to be
-            used.
+            Gets translated url to which page on your website it is meant to be used.
         web_short_description:
           type: string
           default: >-
-            Gets translated short description, meant for external use. Will be
-            HTML
+            Gets translated short description, meant for external use. Will be HTML
         web_full_descrition:
           type: string
           default: >-
-            Gets translated full description, meant for external use. Will be
-            HTML.
+            Gets translated full description, meant for external use. Will be HTML.
         web_additional_info:
           type: string
           default: >-
-            Gets translated additional info, meant for external use. Will be
-            HTML.
+            Gets translated additional info, meant for external use. Will be HTML.
         web_times:
           type: string
           default: Gets departure times. Manually entered string.
         web_disclaimer:
           type: string
           default: >-
-            Gets translated additional info, meant for external use. Will be
-            HTML.
+            Gets translated additional info, meant for external use. Will be HTML.
         is_accommodation:
           type: boolean
           default: 0
@@ -513,9 +502,9 @@ components:
           type: string
           default: easy
           enum:
-            - easy
-            - medium
-            - hard
+          - easy
+          - medium
+          - hard
         duration:
           type: integer
           default: 180
@@ -528,58 +517,58 @@ components:
         default_prices:
           type: array
           default:
-            - id: 1
-              price_category_id: 1
-              name: Adult
-              price_type: Adult
-              price: 1000
-              retail_price: 1000
-              commission: null
-              vat_amount: 99.13
-              occupancy: 1
-              age_from: null
-              age_to: null
-              rates:
-                - name: Food
-                  price: 300
-                  retail_price: 300
-                  vat: 15
-                  vat_id: 2
-                  vat_amount: 39.13
-                  retail_vat_amount: 39.13
-                - name: Guide
-                  price: 400
-                  retail_price: 400
-                  vat: 0
-                  vat_id: 5
-                  vat_amount: 0
-                  retail_vat_amount: 0
-                - name: Tour
-                  price: 300
-                  retail_price: 300
-                  vat: 25
-                  vat_id: 1
-                  vat_amount: 60
-                  retail_vat_amount: 60
-            - id: 2
-              price_category_id: 2
-              name: Child
-              price_type: Child
+          - id: 1
+            price_category_id: 1
+            name: Adult
+            price_type: Adult
+            price: 1000
+            retail_price: 1000
+            commission: null
+            vat_amount: 99.13
+            occupancy: 1
+            age_from: null
+            age_to: null
+            rates:
+            - name: Food
+              price: 300
+              retail_price: 300
+              vat: 15
+              vat_id: 2
+              vat_amount: 39.13
+              retail_vat_amount: 39.13
+            - name: Guide
+              price: 400
+              retail_price: 400
+              vat: 0
+              vat_id: 5
+              vat_amount: 0
+              retail_vat_amount: 0
+            - name: Tour
+              price: 300
+              retail_price: 300
+              vat: 25
+              vat_id: 1
+              vat_amount: 60
+              retail_vat_amount: 60
+          - id: 2
+            price_category_id: 2
+            name: Child
+            price_type: Child
+            price: 700
+            retail_price: 700
+            commission: null
+            vat_amount: 140
+            occupancy: 1
+            age_from: 0
+            age_to: 10
+            rates:
+            - name: Child
               price: 700
               retail_price: 700
-              commission: null
+              vat: 25
+              vat_id: 1
               vat_amount: 140
-              occupancy: 1
-              age_from: 0
-              age_to: 10
-              rates:
-                - name: Child
-                  price: 700
-                  retail_price: 700
-                  vat: 25
-                  vat_id: 1
-                  vat_amount: 140
-                  retail_vat_amount: 140
+              retail_vat_amount: 140
         meet_up_address:
           type: integer
           default: Entrance to the pier
@@ -593,9 +582,9 @@ components:
         currency:
           type: string
           enum:
-            - NOK
-            - EUR
-            - GBP
+          - NOK
+          - EUR
+          - GBP
     Tours:
       type: array
       items:
@@ -935,8 +924,7 @@ components:
         cutoff_time:
           type: integer
           description: >-
-            The number of minutes before start date a booking can be booked. Can
-            be negative.
+            The number of minutes before start date a booking can be booked. Can be negative.
           default: 1440
         cancellation_time:
           type: integer
@@ -1131,19 +1119,19 @@ components:
         items:
           type: array
           default:
+          - id: 1
+            name: Rib safari - Adult
+            quantity: 1
+            pax: 1
+            discount: 10
+            order_id: 10
+            plan_id: 8
+            delivery_date: '2023-10-25 11:20'
+            prices:
             - id: 1
-              name: Rib safari - Adult
-              quantity: 1
-              pax: 1
-              discount: 10
-              order_id: 10
-              plan_id: 8
-              delivery_date: '2023-10-25 11:20'
-              prices:
-                - id: 1
-                  price: 1000
-                  vat: 25
-                  order_data_id: 2
+              price: 1000
+              vat: 25
+              order_data_id: 2
     Users:
       type: array
       items:
@@ -1179,7 +1167,7 @@ components:
           type: array
           items:
             default:
-              - customer
+            - customer
     Leads:
       type: array
       items:
@@ -1263,8 +1251,8 @@ components:
             coordinates:
               type: array
               default:
-                - 14.4138412
-                - 68.386917
+              - 14.4138412
+              - 68.386917
         media:
           type: object
           properties:
@@ -1275,7 +1263,7 @@ components:
             gallery:
               type: array
               default:
-                - url: 'https://bilberry.no/images/11/svolvar.jpg'
+              - url: 'https://bilberry.no/images/11/svolvar.jpg'
     EventRequest:
       type: object
       properties:
