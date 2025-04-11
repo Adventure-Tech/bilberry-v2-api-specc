@@ -208,7 +208,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Notes'
     /events/{eventId}/orders:
-    get:
+      get:
       tags:
         - Event orders
       summary: Gets all event orders
