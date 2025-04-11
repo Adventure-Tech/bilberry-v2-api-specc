@@ -165,26 +165,7 @@ paths:
       security:
         - secret_token:
             - read:event
-  /events:
-    post:
-      tags:
-        - Event
-      summary: Create an event
-      description: create an event
-      operationId: createEvent
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EventRequest'
-      responses:
-        200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Event'
-  /events/{eventId}:
+  events/{eventId}:
     get:
       tags:
         - Event
