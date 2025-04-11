@@ -207,20 +207,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Notes'
-    /events/{eventId}/orders:
-      get:
-      tags:
-        - Event orders
-      summary: Gets all event orders
-      description: Gets all event orders
-      operationId: getEventOrders
-      responses:
-        200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Orders'
+  /events/{eventId}/orders:
+    get:
+    tags:
+      - Event orders
+    summary: Gets all event orders
+    description: Gets all event orders
+    operationId: getEventOrders
+    responses:
+      200:
+        description: successful operation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Orders'
   /events/{eventId}/tasks:
     get:
       tags:
