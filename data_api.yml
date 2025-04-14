@@ -104,19 +104,19 @@ paths:
   /customers:
     get:
       tags:
-      - Customer
+        - Customers
       summary: Gets all customers
       description: gets all customers
       operationId: getCustomers
       parameters:
-        - name: agent
-          in: path
-          description: 'Only returns agents, if true'
-          required: true
-          schema:
-            type: boolean
+      - name: agent
+        in: path
+        description: 'Only returns agents, if true'
+        required: true
+        schema:
+          type: boolean
       responses:
-        '200':
+        200:
           description: Successful operation
           content:
             application/json:
@@ -128,7 +128,7 @@ paths:
   '/customers/{customerId}':
     get:
       tags:
-        - Customer
+        - Customers
       summary: Gets a single customer
       description: Gets a single customer
       operationId: getCustomer
@@ -152,7 +152,7 @@ paths:
   /events:
     get:
       tags:
-        - Event
+        - Events
       summary: Gets all events
       description: Gets all events
       operationId: getEvent
@@ -169,7 +169,7 @@ paths:
   'events/{eventId}':
     get:
       tags:
-      - Event
+      - Events
       summary: Get a single event
       description: get a single event
       operationId: getEvent
@@ -183,7 +183,7 @@ paths:
   '/events/{eventId}/plans':
     get:
       tags:
-      - Event plans
+      - Events
       summary: Get all plans for an event
       description: get all plans for an event
       operationId: getEventPlans
@@ -197,7 +197,7 @@ paths:
   '/events/{eventId}/notes':
     get:
       tags:
-      - Event notes
+      - Events
       summary: Get all notes for an event
       description: Get all notes for an event
       operationId: getEventNotes
@@ -211,7 +211,7 @@ paths:
   '/events/{eventId}/orders':
     get: null
     tags:
-    - Event orders
+    - Events
     summary: Gets all event orders
     description: Gets all event orders
     operationId: getEventOrders
@@ -225,7 +225,7 @@ paths:
   '/events/{eventId}/tasks':
     get:
       tags:
-      - Event tasks
+      - Events
       summary: Get all tasks for an event
       description: Get all tasks for an event
       operationId: getEventTasks
@@ -239,7 +239,7 @@ paths:
   '/events/{eventId}/thread':
     get:
       tags:
-      - Event threads
+      - Events
       summary: Get all threads for an event
       description: Get all threads for an event
       operationId: getEventTasks
@@ -253,7 +253,7 @@ paths:
   /tours:
     get:
       tags:
-      - Tour
+      - Tours
       summary: Get all tours
       description: Get all tours
       operationId: getTours
@@ -267,7 +267,7 @@ paths:
   '/tours/{tourId}':
     get:
       tags:
-      - Tour
+      - Tours
       summary: Get single tour
       description: Get single tour
       operationId: getTour
@@ -281,7 +281,7 @@ paths:
   '/tours/{tourId}/plans':
     get:
       tags:
-      - Tour plans
+      - Tours
       summary: Get all plans for an tour
       description: get all plans for an tour
       operationId: getTourPlans
@@ -295,7 +295,7 @@ paths:
   '/tours/{tourId}/notes':
     get:
       tags:
-      - Tour notes
+      - Tours
       summary: Get all notes for an tour
       description: Get all notes for an tour
       operationId: getTourNotes
@@ -309,7 +309,7 @@ paths:
   '/tours/{tourId}/orders':
     get:
       tags:
-      - Tour orders
+      - Tours
       summary: Gets all tour orders
       description: Gets all tour orders
       operationId: getTourOrders
@@ -323,7 +323,7 @@ paths:
   '/tours/{tourId}/tasks':
     get:
       tags:
-      - Tour tasks
+      - Tours
       summary: Get all tasks for an tour
       description: Get all tasks for an tour
       operationId: getTourTasks
@@ -337,7 +337,7 @@ paths:
   '/tours/{tourId}/thread':
     get:
       tags:
-      - Tour threads
+      - Tours
       summary: Get all threads for a tour
       description: Get all threads for a tour
       operationId: getTourTasks
@@ -365,7 +365,7 @@ paths:
       '/users/{userId}':
         get:
           tags:
-          - User
+          - Users
           summary: Get a user
           description: Get a user
           operationId: getUserTask
@@ -379,7 +379,7 @@ paths:
         /tasks:
           get:
             tags:
-            - Task
+            - Tasks
             summary: Get all tasks
             description: Get all tasks
             operationId: getTasksTask
@@ -393,7 +393,7 @@ paths:
         /leads:
           get:
             tags:
-            - Lead
+            - Leads
             summary: Get all leads
             description: Get all leads
             operationId: getLeadTask
@@ -407,7 +407,7 @@ paths:
         /notes:
           get:
             tags:
-            - Note
+            - Notes
             summary: Get all notes
             description: Get all notes
             operationId: getNotesTask
@@ -421,7 +421,7 @@ paths:
         /plans:
           get:
             tags:
-            - Plan
+            - Plans
             summary: Get all plans
             description: Get all plans
             operationId: getPlansTask
@@ -435,7 +435,7 @@ paths:
         /threads:
           get:
             tags:
-            - Thread
+            - Threads
             summary: Get all threads
             description: Get all threads
             operationId: getThreadsTask
@@ -1057,6 +1057,10 @@ components:
             $ref: '#/components/schemas/User'
     Orders:
       type: array
+      items:
+        $ref: '#/components/schemas/Order'
+    Order:
+      type: object
       properties:
         id:
           type: integer
@@ -1105,6 +1109,12 @@ components:
           type: string
           format: date-time
           default: '2023-10-25 11:20'
+        type:
+          type: string
+          default: BOOKING
+        payment_status:
+          type: string
+          default: paid
         payment_method_id:
           type: integer
           format: int64
@@ -1119,19 +1129,73 @@ components:
         items:
           type: array
           default:
-          - id: 1
-            name: Rib safari - Adult
-            quantity: 1
-            pax: 1
-            discount: 10
-            order_id: 10
-            plan_id: 8
-            delivery_date: '2023-10-25 11:20'
-            prices:
             - id: 1
-              price: 1000
-              vat: 25
-              order_data_id: 2
+              name: Rib safari - Adult
+              quantity: 1
+              pax: 1
+              discount: 10
+              order_id: 10
+              plan_id: 8
+              delivery_date: '2023-10-25 11:20'
+              prices:
+                - id: 1
+                  price: 1000
+                  vat: 25
+                  order_data_id: 2
+        guest_list:
+          type: array
+          items:
+            $ref: '#/components/schemas/GuestList'
+        order_fields_list:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderFieldsList'
+    GuestList:
+        type: object
+        properties:
+            id:
+              type: integer
+              format: int64
+              default: 10
+            guests:
+              type: array
+              items:
+                $ref: '#/components/schemas/Guests'
+    Guests:
+      type: object
+      properties:
+        1:
+          type: array
+          default:
+            field_name:
+                en: 'Size (XS,S,M,L,XL,XXL)'
+                nb: 'Størrelse (XS,S,M,L,XL,XXL)'
+            field_value: 'XL'
+    OrderFieldsList:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          default: 10
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderFieldEntity'
+    OrderFieldEntity:
+      type: object
+      properties:
+        1:
+          type: array
+          default:
+            field_name:
+              en: 'Allergies'
+              nb: 'Allergier'
+            field_value: 'Ja, peanøtter'
+    Guest:
+      type: object
+      properties:
+
     Users:
       type: array
       items:
