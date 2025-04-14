@@ -30,7 +30,7 @@ tags:
 - name: Threads
   description: Contains information about your threads (communication with end customers)
 paths:
-  /Orders:
+  /orders:
     get:
       tags:
       - Orders
@@ -109,12 +109,12 @@ paths:
       description: gets all customers
       operationId: getCustomers
       parameters:
-      - name: agent
-        in: path
-        description: 'Only returns agents, if true'
-        required: true
-        schema:
-          type: boolean
+        - name: agent
+          in: path
+          description: 'Only returns agents, if true'
+          required: true
+          schema:
+            type: boolean
       responses:
         '200':
           description: Successful operation
@@ -123,22 +123,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/Customers'
       security:
-      - secret_token:
-        - 'read:customer'
+        - secret_token:
+          - 'read:customer'
   '/customers/{customerId}':
     get:
       tags:
-      - Customer
+        - Customer
       summary: Gets a single customer
       description: Gets a single customer
       operationId: getCustomer
       parameters:
-      - name: agent
-        in: path
-        description: 'Only returns agent, if true'
-        required: true
-        schema:
-          type: boolean
+        - name: agent
+          in: path
+          description: 'Only returns agent, if true'
+          required: true
+          schema:
+            type: boolean
       responses:
         '200':
           description: Successful operation
@@ -152,7 +152,7 @@ paths:
   /events:
     get:
       tags:
-      - Event
+        - Event
       summary: Gets all events
       description: Gets all events
       operationId: getEvent
