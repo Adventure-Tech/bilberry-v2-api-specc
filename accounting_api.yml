@@ -13,6 +13,8 @@ tags:
     description: Bilberry invoices
   - name: account ledgers
     description: VATs and payment methods
+  - name: external
+    description: Accounting system reference data stored on Bilberry invoices
 paths:
   /invoices:
     get:
@@ -22,32 +24,47 @@ paths:
         - invoices
       summary: lists invoices
       operationId: getInvoices
-      description: "Returns invoices from selected time period"
+      description: |
+        Returns invoices from selected time period.
+
+        Membership invoices and invoices with payment method "invoiced on private event" are always excluded.
+        Unpaid invoices with the Online payment method are excluded unless `include_unpaid_online=1`.
+
+        Invoices are sorted newest first by the selected `date_field` (by invoice ID when `date_field=closed_at`).
       parameters:
         - in: query
           name: start_date
-          description: pass an optional start date (default is current day) in YYY-mm-dd format
+          description: |
+            Optional start date in YYYY-mm-dd format.
+            If neither `start_date` nor `end_date` is set, the period is from the start of last month to the end of the current month.
+            If only `start_date` is set, only that single day is returned.
           required: false
           schema:
             type: string
+            format: date
+            example: 2024-07-01
         - in: query
           name: end_date
-          description: pass an optional end date (default is current day) in YYY-mm-dd format
+          description: Optional end date in YYYY-mm-dd format. Must not be before `start_date`
           required: false
           schema:
             type: string
+            format: date
+            example: 2024-07-31
         - in: query
           name: date_field
-          description: date field to use
+          description: Date field to filter by. `closed_at` is the date the invoice was paid, or the credit note was refunded
           schema:
             type: string
-            enum: [invoice_date, delivery_date, updated_at, completed_at]
+            enum: [invoice_date, delivery_date, updated_at, closed_at]
+            default: invoice_date
         - in: query
           name: type
           description: Filter by invoices or credit notes (both by default)
           schema:
             type: string
             enum: [invoice, creditnote]
+        - $ref: '#/components/parameters/IncludeUnpaidOnline'
       responses:
         '200':
           description: Invoices matching selected filters
@@ -62,10 +79,11 @@ paths:
                       $ref: '#/components/schemas/Invoice'
                   meta:
                     type: object
+                    description: "All totals exclude cancelled invoices"
                     properties:
                       subtotal:
                         type: number
-                        description: "Total ex. VAT from orderlines"
+                        description: "Total inc. VAT from orderlines"
                         example: 120000
                       payments_total:
                         type: number
@@ -75,6 +93,22 @@ paths:
                         type: number
                         description: "subtotal - payments_total for open and closed invoices (cancelled invoices are ignored)"
                         example: 20000
+                      subtotal_ex_vat:
+                        type: number
+                        description: "Total ex. VAT from orderlines"
+                        example: 107142.86
+                      vat_total:
+                        type: number
+                        description: "Total VAT from orderlines"
+                        example: 12857.14
+                      giftcard_purchases_total_ex_vat:
+                        type: number
+                        description: "Total ex. VAT of giftcard purchases"
+                        example: 0
+                      subtotal_ex_vat_ex_giftcard_purchases:
+                        type: number
+                        description: "subtotal_ex_vat - giftcard_purchases_total_ex_vat"
+                        example: 107142.86
                       start_date:
                         type: string
                         format: date-time
@@ -85,7 +119,7 @@ paths:
                         example: 2024-07-31 23:59:59
                       date_field:
                         type: string
-                        enum: [invoice_date, delivery_date, updated_at, completed_at]
+                        enum: [invoice_date, delivery_date, updated_at, closed_at]
                         example: "delivery_date"
                       type:
                         type: string
@@ -99,9 +133,21 @@ paths:
                    $ref: '#/components/schemas/InvoiceWarnings'
 
         '400':
-          description: Invalid input parameters
+          description: "Invalid input parameters: invalid type, date_field or start/end dates, or start date after end date"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Invalid start/end dates"
+                message: "Start date must be before end date"
+                code: 400
         '500':
           description: An error occurred while fetching data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /invoices/{invoice_id}:
     get:
@@ -119,6 +165,7 @@ paths:
           required: true
           schema:
             type: integer
+        - $ref: '#/components/parameters/IncludeUnpaidOnline'
       responses:
         '200':
           description: "Invoice found"
@@ -128,7 +175,15 @@ paths:
                 type: object
                 properties:
                   data:
-                    $ref: '#/components/schemas/Invoice'
+                    allOf:
+                      - $ref: '#/components/schemas/Invoice'
+                      - type: object
+                        properties:
+                          creditnotes:
+                            type: array
+                            description: "Credit notes created from this invoice"
+                            items:
+                              $ref: '#/components/schemas/Invoice'
                   meta:
                     type: object
                     properties:
@@ -139,8 +194,20 @@ paths:
                    $ref: '#/components/schemas/InvoiceWarnings'
         '404':
           description: Invoice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Invoice not found"
+                message: "Invoice with ID 1234 not found."
+                code: 404
         '500':
           description: An error occurred while fetching data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /invoices/{invoice_id}/mark-as-paid:
     patch:
@@ -149,7 +216,7 @@ paths:
       tags:
         - invoices
       summary: "Mark invoice as paid"
-      operationId: getInvoice
+      operationId: markAsPaid
       description: "Marks specified invoice as paid (or credit note as refunded)"
       parameters:
         - in: path
@@ -160,11 +227,28 @@ paths:
             type: integer
       responses:
         '200':
-          description: "Success: Invoice marked as paid"
+          description: "Success: Invoice marked as paid (or credit note marked as refunded)"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Invoice marked as paid"
+                  invoice_id:
+                    type: integer
+                    example: 1234
         '404':
           description: "Invoice not found"
         '406':
-          description: "Invoice already marked as paid"
+          description: "Invoice already marked as paid (or credit note already marked as refunded)"
         '500':
           description: "An error occurred while fetching data"
 
@@ -199,12 +283,10 @@ paths:
                   type: object
             example:
               external_id: "ref12345"
-              external_data: {
-                "field1": "value 1",
-                "more_data": {
-                  "more values": "more info"
-                }
-              }
+              external_data:
+                field1: "value 1"
+                more_data:
+                  more values: "more info"
       responses:
         '200':
           description: "Success: Invoice external data updated"
@@ -244,9 +326,8 @@ paths:
                     example: "ref4321"
                   external_data:
                     type: object
-                    example: {
-                      "test": "data"
-                    }
+                    example:
+                      test: "data"
         '404':
           description: "Invoice not found"
         '500':
@@ -327,7 +408,30 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+  parameters:
+    IncludeUnpaidOnline:
+      in: query
+      name: include_unpaid_online
+      description: "Set include_unpaid_online=1 to include unpaid invoices with the Online payment method. These are excluded by default, as they are not relevant for accounting"
+      required: false
+      schema:
+        type: integer
+        enum: [0, 1]
+        default: 0
   schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid date field"
+        message:
+          type: string
+          example: "Date field must be either invoice_date, delivery_date, updated_at or closed_at"
+        code:
+          type: integer
+          example: 400
+
     InvoiceType:
       type: object
       properties:
@@ -335,7 +439,7 @@ components:
           type: integer
           example: 2
         name:
-          type: integer
+          type: string
           example: "Online Booking"
 
     PaymentMethod:
@@ -466,6 +570,10 @@ components:
         invoice_id:
           type: integer
           example: 1234
+        erp_invoice_reference:
+          type: string
+          description: "Unique reference for the invoice across Bilberry installations, in the format {subdomain}:{invoice_id}"
+          example: "acme:1234"
         type:
           type: string
           description: "Specifies if the document is an invoice or credit note"
@@ -476,9 +584,14 @@ components:
           description: "The invoice status can be open(unpaid/unrefunded), closed(paid/refunded) or canceled "
           enum: [open, closed, cancelled]
           example: open
+        invoice_lang:
+          type: string
+          description: "Invoice language. Project language for private events, otherwise 'nb' if the billing country is Norway and 'en' for other countries"
+          example: nb
         invoice_date:
           type: string
           format: date-time
+          description: "Invoice date. If the invoice date is before the 'move orders before date' accounting setting, the current date is returned instead"
           example: 2024-07-10T15:08:39.000000+02:00
         delivery_date:
           type: string
@@ -488,9 +601,19 @@ components:
           type: string
           format: date-time
           example: 2024-07-10T15:08:39.000000+02:00
+        updated_at:
+          type: string
+          format: date-time
+          example: 2024-07-10T15:08:39.000000+02:00
+        orderlines_updated_at:
+          type: string
+          format: date-time
+          description: "Latest update time of the orders, order lines and order prices on the invoice"
+          example: 2024-07-10T15:08:39.000000+02:00
         closed_at:
           type: string
           format: date-time
+          description: "Date the invoice was paid, or the credit note was refunded"
           example: 2024-07-10T15:08:39.000000+02:00
           nullable: true
         cancelled_at:
@@ -498,10 +621,6 @@ components:
           format: date-time
           example: 2024-07-10T15:08:39.000000+02:00
           nullable: true
-        updated_at:
-          type: string
-          format: date-time
-          example: 2024-07-10T15:08:39.000000+02:00
         currency:
           type: string
           example: NOK
@@ -512,12 +631,34 @@ components:
           nullable: true
         billing_info:
           $ref: '#/components/schemas/BillingInfo'
+        contacts:
+          type: array
+          description: "Contacts from the orders on the invoice, in the format 'name (email)'"
+          items:
+            type: string
+            example: "John Doe (john@example.com)"
+        info_lines:
+          type: array
+          description: "Additional information lines for the invoice (attention, project name and contacts), depending on accounting settings"
+          items:
+            type: string
+            example: "Att: John Doe"
+        project_name:
+          type: string
+          nullable: true
+          description: "Project name if the invoice belongs to a private event"
+          example: "Acme Inc company trip"
         salesperson:
           $ref: '#/components/schemas/Salesperson'
         attention:
           type: string
           description: "Attention field can be used by travel agents to specify a reference code for the booking or the person the booking is for"
           example: "att: John Doe"
+        reference:
+          type: string
+          nullable: true
+          description: "Invoice reference. Based on accounting settings it is the order name(s), the project name or the attention field. Agent invoices default to 'agent invoice'"
+          example: "John Doe"
         invoice_type_id:
           type: integer
           example: 1
@@ -530,6 +671,16 @@ components:
         payment_method:
           type: string
           example: Invoice
+        payment_method_exclude:
+          type: integer
+          format: boolean
+          description: "1 if the payment method is excluded from turnover"
+          example: 0
+        erp_department_number:
+          type: string
+          nullable: true
+          description: "Department number in the accounting system (Tripletex setting)"
+          example: "10"
         orderlines:
           type: array
           items:
@@ -541,16 +692,33 @@ components:
 
         subtotal:
           type: number
+          description: "Total inc. VAT from orderlines"
           example: 1000
+        subtotal_ex_vat:
+          type: number
+          description: "Total ex. VAT from orderlines"
+          example: 800
         payments_total:
           type: number
           example: 1000
+        vat_total:
+          type: number
+          description: "Total VAT from orderlines"
+          example: 200
         balance:
           type: number
           description: "subtotal - payments_total. 0 if paid in full. Negative if overpaid, and positive if partially paid."
           example: 0
         warnings:
-          $ref: '#/components/schemas/InvoiceWarnings'
+          type: array
+          description: "Warnings for this invoice, such as missing VAT ledgers"
+          items:
+            type: string
+            example: "VAT ledger missing for product id: 28, VAT: 12% - Mountain biking"
+        checksum:
+          type: string
+          description: "MD5 checksum of the accounting-relevant invoice data (dates, payment method, totals, orderlines and giftcard/deposit payments). Changes when any of this data changes, so it can be used to detect if an exported invoice must be updated"
+          example: "5d41402abc4b2a76b9719d911017c592"
 
 
 
@@ -566,9 +734,6 @@ components:
           type: string
           format: email
           example: 'reception@acmehotel.com'
-        phone:
-          type: integer
-          example: 408-867-5309
         address1:
           type: string
           example: "Flat 2B"
@@ -587,12 +752,18 @@ components:
         country_code:
           type: string
           example: "NO"
+        erp_customer_number:
+          type: string
+          nullable: true
+          description: "Customer number in the accounting system. From the Bilberry customer if set, otherwise from the payment method"
+          example: "10045"
         customer:
           $ref: '#/components/schemas/Customer'
 
 
     Customer:
       type: object
+      description: "Bilberry customer. Returned as an empty array if the invoice has no customer"
       properties:
         id:
           type: integer
@@ -605,7 +776,7 @@ components:
           format: email
           example: "reception@acmehotel.com"
         phone:
-          type: integer
+          type: string
           example: 408-867-5309
         address1:
           type: string
@@ -635,8 +806,13 @@ components:
           type: string
           format: email
           example: "reception@acmehotel.com"
+        is_gofjords:
+          type: integer
+          format: boolean
+          example: 0
     Salesperson:
       type: object
+      description: "Project manager of the project. Returned as an empty array if not set"
       properties:
         id:
           type: integer
@@ -653,16 +829,25 @@ components:
       properties:
         payment_id:
           type: string
+          description: |
+            Payment ID prefixed with payment type:
+            - `payment:{invoice_id}` - payment of the invoice (only if the invoice is paid/refunded)
+            - `giftcard:{order_line_id}` - giftcard used as payment
+            - `deposit:{order_line_id}` - deposit used as payment
+            - `sponsored_giftcard:{order_line_id}` - sponsored giftcard used as payment
           example: "giftcard:1234"
         name:
           type: string
           example: "Invoice"
-        descripton:
+        description:
           type: string
           example: "Stripe payment #SHK5G3S"
         payment_method:
           type: string
           example: "Invoice"
+        payment_method_id:
+          type: integer
+          example: 1
         amount:
           type: number
           description: "Payment amount in currency"
@@ -671,15 +856,49 @@ components:
           type: integer
           description: "Bookkeeping account"
           example: 1905
+        paid_at:
+          type: string
+          format: date-time
+          example: 2024-07-10T15:08:39.000000+02:00
+        accounting_payment_method_id:
+          type: string
+          nullable: true
+          description: "Payment method ID in the accounting system, matched on account ledger (Tripletex only)"
+          example: "6841399"
+        accounting_payment_method:
+          type: object
+          nullable: true
+          description: "Payment method in the accounting system, matched on account ledger (Tripletex only)"
+          properties:
+            PaymentID:
+              type: string
+              example: "6841399"
+            AccountCode:
+              type: string
+              example: "1900"
+            Payment_Name:
+              type: string
+              example: "Kontant"
 
     Orderline:
       type: object
+      description: "Discount lines have negative quantity and positive unit price"
       properties:
         id:
           type: integer
           example: 22465
-        text:
+        order_line_id:
+          type: integer
+          description: "ID of the order line. An order line can have multiple orderlines in the API, one per VAT rate"
+          example: 18234
+        last_modified_at:
           type: string
+          format: date-time
+          description: "Latest update time of the order, order line or order price"
+          example: 2024-07-10T15:00:00.000000+02:00
+        description:
+          type: string
+          description: "Orderline description, translated to the invoice language"
           example: "Mountain biking group tour"
         product:
           type: string
@@ -687,14 +906,22 @@ components:
         product_id:
           type: integer
           example: 28
+        product_is_resale:
+          type: integer
+          format: boolean
+          example: 0
+        location_id:
+          type: integer
+          nullable: true
+          example: 4
         start:
           type: string
           format: date-time
-          example: 2024-07-10T15:00:0.000000+02:00
+          example: 2024-07-10T15:00:00.000000+02:00
         end:
           type: string
           format: date-time
-          example: 2024-07-10T15:00:0.000000+02:00
+          example: 2024-07-10T15:00:00.000000+02:00
         unit_price_inc_vat:
           type: number
           description: "Price per unit inc VAT before discounts"
@@ -703,6 +930,9 @@ components:
             type: number
             description: "Price per unit ex VAT before discounts"
             example: 2187.50
+        pax:
+          type: integer
+          example: 4
         quantity:
           type: integer
           example: 4
@@ -718,7 +948,7 @@ components:
           type: number
           description: "Discount amount in currency, calculated from discount_percent and total_price"
           example: 480
-        inc_vat_amount:
+        total_inc_vat:
           type: number
           description: "Total amount inc VAT after discounts"
           example: 4320
@@ -726,10 +956,18 @@ components:
           type: number
           description: "VAT amount in currency"
           example: 462.86
-        ex_vat_amount:
+        total_ex_vat:
           type: number
           description: "Tota amount ex VAT after discounts"
           example: 3857.14
+        is_giftcard:
+          type: integer
+          format: boolean
+          example: 0
+        is_deposit:
+          type: integer
+          format: boolean
+          example: 0
         vat:
           type: object
           properties:
@@ -752,7 +990,7 @@ components:
             department_id:
               type: integer
               example: 3
-              description: "Internal Bilberry department ID"
+              description: "Internal Bilberry department ID. From the product location's destination if set, otherwise from the VAT"
             department_ext_reference:
               type: string
               example: "bergen-office"
@@ -775,6 +1013,17 @@ components:
         category_id:
           type: integer
           description: "Project category ID"
+        category_name:
+          type: string
+          nullable: true
+          description: "Project category name"
+          example: "Private event"
+        confirmed_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: "Date the project was confirmed"
+          example: 2024-06-10T12:00:00.000000+02:00
         start:
           type: string
           format: date
@@ -785,6 +1034,10 @@ components:
           format: date
           description: "Project end date"
           example: 2024-07-13
+        project_lang:
+          type: string
+          nullable: true
+          example: en
     Plan:
       type: object
       properties:
@@ -798,8 +1051,15 @@ components:
         start:
           type: string
           format: date-time
-          example: 2024-07-10T12:00:0.000000+02:00
+          nullable: true
+          example: 2024-07-10T12:00:00.000000+02:00
         end:
           type: string
           format: date-time
-          example: 2024-07-10T15:00:0.000000+02:00
+          nullable: true
+          example: 2024-07-10T15:00:00.000000+02:00
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: 2024-05-02T09:30:00.000000+02:00
